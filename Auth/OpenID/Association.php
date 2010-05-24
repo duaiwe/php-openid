@@ -14,20 +14,23 @@
  * @license http://www.apache.org/licenses/LICENSE-2.0 Apache
  */
 
-/**
- * @access private
- */
-require_once 'Auth/OpenID/CryptUtil.php';
+if( !defined('Auth_OpenID_BaseDir') )
+  define('Auth_OpenID_BaseDir', dirname(dirname(__FILE__)));
 
 /**
  * @access private
  */
-require_once 'Auth/OpenID/KVForm.php';
+require_once Auth_OpenID_BaseDir.'/OpenID/CryptUtil.php';
 
 /**
  * @access private
  */
-require_once 'Auth/OpenID/HMAC.php';
+require_once Auth_OpenID_BaseDir.'/OpenID/KVForm.php';
+
+/**
+ * @access private
+ */
+require_once Auth_OpenID_BaseDir.'/OpenID/HMAC.php';
 
 /**
  * This class represents an association between a server and a

@@ -12,7 +12,10 @@
  * @license http://www.apache.org/licenses/LICENSE-2.0 Apache
  */
 
-require_once 'Auth/OpenID/Discover.php';
+if( !defined('Auth_OpenID_BaseDir') )
+  define('Auth_OpenID_BaseDir', dirname(dirname(__FILE__)));
+
+require_once Auth_OpenID_BaseDir.'/OpenID/Discover.php';
 
 /**
  * A regular expression that matches a domain ending in a top-level domains.

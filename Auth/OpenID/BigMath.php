@@ -15,15 +15,18 @@
  * @license http://www.apache.org/licenses/LICENSE-2.0 Apache
  */
 
+if( !defined('Auth_OpenID_BaseDir') )
+  define('Auth_OpenID_BaseDir', dirname(dirname(__FILE__)));
+
 /**
  * Needed for random number generation
  */
-require_once 'Auth/OpenID/CryptUtil.php';
+require_once Auth_OpenID_BaseDir.'/OpenID/CryptUtil.php';
 
 /**
  * Need Auth_OpenID::bytes().
  */
-require_once 'Auth/OpenID.php';
+require_once Auth_OpenID_BaseDir.'/OpenID.php';
 
 /**
  * The superclass of all big-integer math implementations

@@ -13,10 +13,13 @@
  * @license http://www.apache.org/licenses/LICENSE-2.0 Apache
  */
 
+if( !defined('Auth_OpenID_BaseDir') )
+  define('Auth_OpenID_BaseDir', dirname(dirname(__FILE__)));
+
 /**
  * Require the XPath implementation.
  */
-require_once 'Auth/Yadis/XML.php';
+require_once Auth_OpenID_BaseDir.'/Yadis/XML.php';
 
 /**
  * This match mode means a given service must match ALL filters passed

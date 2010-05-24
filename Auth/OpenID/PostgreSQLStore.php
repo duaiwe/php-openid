@@ -6,10 +6,13 @@
  * @package OpenID
  */
 
+if( !defined('Auth_OpenID_BaseDir') )
+  define('Auth_OpenID_BaseDir', dirname(dirname(__FILE__)));
+
 /**
  * Require the base class file.
  */
-require_once "Auth/OpenID/SQLStore.php";
+require_once Auth_OpenID_BaseDir.'/OpenID/SQLStore.php';
 
 /**
  * An SQL store that uses PostgreSQL as its backend.

@@ -14,13 +14,16 @@
  * @license http://www.apache.org/licenses/LICENSE-2.0 Apache
  */
 
+if( !defined('Auth_OpenID_BaseDir') )
+  define('Auth_OpenID_BaseDir', dirname(dirname(__FILE__)));
+
 /**
  * Require base class for creating a new interface.
  */
-require_once 'Auth/OpenID.php';
-require_once 'Auth/OpenID/Interface.php';
-require_once 'Auth/OpenID/HMAC.php';
-require_once 'Auth/OpenID/Nonce.php';
+require_once Auth_OpenID_BaseDir.'/OpenID.php';
+require_once Auth_OpenID_BaseDir.'/OpenID/Interface.php';
+require_once Auth_OpenID_BaseDir.'/OpenID/HMAC.php';
+require_once Auth_OpenID_BaseDir.'/OpenID/Nonce.php';
 
 /**
  * This is a filesystem-based store for OpenID associations and

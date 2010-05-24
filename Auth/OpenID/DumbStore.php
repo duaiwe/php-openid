@@ -14,11 +14,14 @@
  * @license http://www.apache.org/licenses/LICENSE-2.0 Apache
  */
 
+if( !defined('Auth_OpenID_BaseDir') )
+  define('Auth_OpenID_BaseDir', dirname(dirname(__FILE__)));
+
 /**
  * Import the interface for creating a new store class.
  */
-require_once 'Auth/OpenID/Interface.php';
-require_once 'Auth/OpenID/HMAC.php';
+require_once Auth_OpenID_BaseDir.'/OpenID/Interface.php';
+require_once Auth_OpenID_BaseDir.'/OpenID/HMAC.php';
 
 /**
  * This is a store for use in the worst case, when you have no way of

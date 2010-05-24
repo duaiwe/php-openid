@@ -8,7 +8,10 @@
  * http://openid.net/developers/specs/
  */
 
-require_once "Auth/OpenID/Extension.php";
+if( !defined('Auth_OpenID_BaseDir') )
+  define('Auth_OpenID_BaseDir', dirname(dirname(__FILE__)));
+
+require_once Auth_OpenID_BaseDir.'/OpenID/Extension.php';
 
 define('Auth_OpenID_PAPE_NS_URI',
        "http://specs.openid.net/extensions/pape/1.0");

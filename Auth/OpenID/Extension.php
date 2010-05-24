@@ -6,10 +6,13 @@
  * @package OpenID
  */
 
+if( !defined('Auth_OpenID_BaseDir') )
+  define('Auth_OpenID_BaseDir', dirname(dirname(__FILE__)));
+
 /**
  * Require the Message implementation.
  */
-require_once 'Auth/OpenID/Message.php';
+require_once Auth_OpenID_BaseDir.'/OpenID/Message.php';
 
 /**
  * A base class for accessing extension request and response data for

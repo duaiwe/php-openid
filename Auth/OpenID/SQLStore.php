@@ -13,21 +13,24 @@
  * @license http://www.apache.org/licenses/LICENSE-2.0 Apache
  */
 
-/**
- * @access private
- */
-require_once 'Auth/OpenID/Interface.php';
-require_once 'Auth/OpenID/Nonce.php';
+if( !defined('Auth_OpenID_BaseDir') )
+  define('Auth_OpenID_BaseDir', dirname(dirname(__FILE__)));
 
 /**
  * @access private
  */
-require_once 'Auth/OpenID.php';
+require_once Auth_OpenID_BaseDir.'/OpenID/Interface.php';
+require_once Auth_OpenID_BaseDir.'/OpenID/Nonce.php';
 
 /**
  * @access private
  */
-require_once 'Auth/OpenID/Nonce.php';
+require_once Auth_OpenID_BaseDir.'/OpenID.php';
+
+/**
+ * @access private
+ */
+require_once Auth_OpenID_BaseDir.'/OpenID/Nonce.php';
 
 /**
  * This is the parent class for the SQL stores, which contains the

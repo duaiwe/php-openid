@@ -13,22 +13,25 @@
  * @license http://www.gnu.org/copyleft/lesser.html LGPL
  */
 
+if( !defined('Auth_OpenID_BaseDir') )
+  define('Auth_OpenID_BaseDir', dirname(dirname(__FILE__)));
+
 require_once 'MDB2.php';
 
 /**
  * @access private
  */
-require_once 'Auth/OpenID/Interface.php';
+require_once Auth_OpenID_BaseDir.'/OpenID/Interface.php';
 
 /**
  * @access private
  */
-require_once 'Auth/OpenID.php';
+require_once Auth_OpenID_BaseDir.'/OpenID.php';
 
 /**
  * @access private
  */
-require_once 'Auth/OpenID/Nonce.php';
+require_once Auth_OpenID_BaseDir.'/OpenID/Nonce.php';
 
 /**
  * This store uses a PEAR::MDB2 connection to store persistence

@@ -17,6 +17,9 @@
  * @license http://www.apache.org/licenses/LICENSE-2.0 Apache
  */
 
+if( !defined('Auth_OpenID_BaseDir') )
+  define('Auth_OpenID_BaseDir', dirname(__FILE__));
+
 /**
  * The library version string
  */
@@ -25,10 +28,10 @@ define('Auth_OpenID_VERSION', '2.2.2');
 /**
  * Require the fetcher code.
  */
-require_once "Auth/Yadis/PlainHTTPFetcher.php";
-require_once "Auth/Yadis/ParanoidHTTPFetcher.php";
-require_once "Auth/OpenID/BigMath.php";
-require_once "Auth/OpenID/URINorm.php";
+require_once Auth_OpenID_BaseDir.'/Yadis/PlainHTTPFetcher.php';
+require_once Auth_OpenID_BaseDir.'/Yadis/ParanoidHTTPFetcher.php';
+require_once Auth_OpenID_BaseDir.'/OpenID/BigMath.php';
+require_once Auth_OpenID_BaseDir.'/OpenID/URINorm.php';
 
 /**
  * Status code returned by the server when the only option is to show

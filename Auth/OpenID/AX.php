@@ -7,12 +7,15 @@
  * @package OpenID
  */
 
+if( !defined('Auth_OpenID_BaseDir') )
+  define('Auth_OpenID_BaseDir', dirname(dirname(__FILE__)));
+
 /**
  * Require utility classes and functions for the consumer.
  */
-require_once "Auth/OpenID/Extension.php";
-require_once "Auth/OpenID/Message.php";
-require_once "Auth/OpenID/TrustRoot.php";
+require_once Auth_OpenID_BaseDir.'/OpenID/Extension.php';
+require_once Auth_OpenID_BaseDir.'/OpenID/Message.php';
+require_once Auth_OpenID_BaseDir.'/OpenID/TrustRoot.php';
 
 define('Auth_OpenID_AX_NS_URI',
        'http://openid.net/srv/ax/1.0');

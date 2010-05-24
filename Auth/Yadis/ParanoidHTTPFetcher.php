@@ -13,12 +13,15 @@
  * @license http://www.apache.org/licenses/LICENSE-2.0 Apache
  */
 
+if( !defined('Auth_OpenID_BaseDir') )
+  define('Auth_OpenID_BaseDir', dirname(dirname(__FILE__)));
+
 /**
  * Interface import
  */
-require_once "Auth/Yadis/HTTPFetcher.php";
+require_once Auth_OpenID_BaseDir.'/Yadis/HTTPFetcher.php';
 
-require_once "Auth/OpenID.php";
+require_once Auth_OpenID_BaseDir.'/OpenID.php';
 
 /**
  * A paranoid {@link Auth_Yadis_HTTPFetcher} class which uses CURL

@@ -89,19 +89,22 @@
  * @license http://www.apache.org/licenses/LICENSE-2.0 Apache
  */
 
+if( !defined('Auth_OpenID_BaseDir') )
+  define('Auth_OpenID_BaseDir', dirname(dirname(__FILE__)));
+
 /**
  * Required imports
  */
-require_once "Auth/OpenID.php";
-require_once "Auth/OpenID/Association.php";
-require_once "Auth/OpenID/CryptUtil.php";
-require_once "Auth/OpenID/BigMath.php";
-require_once "Auth/OpenID/DiffieHellman.php";
-require_once "Auth/OpenID/KVForm.php";
-require_once "Auth/OpenID/TrustRoot.php";
-require_once "Auth/OpenID/ServerRequest.php";
-require_once "Auth/OpenID/Message.php";
-require_once "Auth/OpenID/Nonce.php";
+require_once Auth_OpenID_BaseDir.'/OpenID.php';
+require_once Auth_OpenID_BaseDir.'/OpenID/Association.php';
+require_once Auth_OpenID_BaseDir.'/OpenID/CryptUtil.php';
+require_once Auth_OpenID_BaseDir.'/OpenID/BigMath.php';
+require_once Auth_OpenID_BaseDir.'/OpenID/DiffieHellman.php';
+require_once Auth_OpenID_BaseDir.'/OpenID/KVForm.php';
+require_once Auth_OpenID_BaseDir.'/OpenID/TrustRoot.php';
+require_once Auth_OpenID_BaseDir.'/OpenID/ServerRequest.php';
+require_once Auth_OpenID_BaseDir.'/OpenID/Message.php';
+require_once Auth_OpenID_BaseDir.'/OpenID/Nonce.php';
 
 define('AUTH_OPENID_HTTP_OK', 200);
 define('AUTH_OPENID_HTTP_REDIRECT', 302);

@@ -6,13 +6,16 @@
  * @package OpenID
  */
 
+if( !defined('Auth_OpenID_BaseDir') )
+  define('Auth_OpenID_BaseDir', dirname(dirname(__FILE__)));
+
 /**
  * Import tools needed to deal with messages.
  */
-require_once 'Auth/OpenID.php';
-require_once 'Auth/OpenID/KVForm.php';
-require_once 'Auth/Yadis/XML.php';
-require_once 'Auth/OpenID/Consumer.php'; // For Auth_OpenID_FailureResponse
+require_once Auth_OpenID_BaseDir.'/OpenID.php';
+require_once Auth_OpenID_BaseDir.'/OpenID/KVForm.php';
+require_once Auth_OpenID_BaseDir.'/Yadis/XML.php';
+require_once Auth_OpenID_BaseDir.'/OpenID/Consumer.php'; // For Auth_OpenID_FailureResponse
 
 // This doesn't REALLY belong here, but where is better?
 define('Auth_OpenID_IDENTIFIER_SELECT',

@@ -14,7 +14,10 @@
  * @license http://www.apache.org/licenses/LICENSE-2.0 Apache
  */
 
-require_once 'Auth/OpenID.php';
+if( !defined('Auth_OpenID_BaseDir') )
+  define('Auth_OpenID_BaseDir', dirname(dirname(__FILE__)));
+
+require_once Auth_OpenID_BaseDir.'/OpenID.php';
 
 /**
  * SHA1_BLOCKSIZE is this module's SHA1 blocksize used by the fallback

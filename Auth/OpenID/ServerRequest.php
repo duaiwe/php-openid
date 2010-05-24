@@ -14,10 +14,13 @@
  * @license http://www.apache.org/licenses/LICENSE-2.0 Apache
  */
 
+if( !defined('Auth_OpenID_BaseDir') )
+  define('Auth_OpenID_BaseDir', dirname(dirname(__FILE__)));
+
 /**
  * Imports
  */
-require_once "Auth/OpenID.php";
+require_once Auth_OpenID_BaseDir.'/OpenID.php';
 
 /**
  * Object that holds the state of a request to the OpenID server

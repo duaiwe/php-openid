@@ -6,10 +6,13 @@
  * @package OpenID
  */
 
+if( !defined('Auth_OpenID_BaseDir') )
+  define('Auth_OpenID_BaseDir', dirname(dirname(__FILE__)));
+
 /**
  * Need CryptUtil to generate random strings.
  */
-require_once 'Auth/OpenID/CryptUtil.php';
+require_once Auth_OpenID_BaseDir.'/OpenID/CryptUtil.php';
 
 /**
  * This is the characters that the nonces are made from.

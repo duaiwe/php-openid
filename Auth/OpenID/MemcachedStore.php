@@ -15,10 +15,13 @@
  * Contributed by Open Web Technologies <http://openwebtech.ru/>
  */
 
+if( !defined('Auth_OpenID_BaseDir') )
+  define('Auth_OpenID_BaseDir', dirname(dirname(__FILE__)));
+
 /**
  * Import the interface for creating a new store class.
  */
-require_once 'Auth/OpenID/Interface.php';
+require_once Auth_OpenID_BaseDir.'/OpenID/Interface.php';
 
 /**
  * This is a memcached-based store for OpenID associations and
