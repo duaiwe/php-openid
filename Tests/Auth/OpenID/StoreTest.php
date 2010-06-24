@@ -691,7 +691,7 @@ class Tests_Auth_OpenID_Included_StoreTest extends Tests_Auth_OpenID_Store {
 
         $db->query("USE $temp_db_name");
 
-        $store =& new Auth_OpenID_MDB2Store($db);
+        $store = new Auth_OpenID_MDB2Store($db);
         if (!$store->createTables()) {
             $this->fail("Failed to create tables");
             return;

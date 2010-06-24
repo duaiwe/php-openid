@@ -54,7 +54,7 @@ $args = $con->readPHPArgv();
 array_shift($args);
 $options = $con->getopt2($args, "", $longopts);
 
-if (PEAR::isError($options)) {
+if (@PEAR::isError($options)) {
     print $options->message . "\n";
     exit(1);
 }
