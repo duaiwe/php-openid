@@ -130,7 +130,7 @@ class Auth_OpenID_TestFetcher extends Auth_Yadis_HTTPFetcher {
         }
     }
 
-    function get($url)
+    function get($url, $headers=null)
     {
         if (array_key_exists($url, $this->get_responses)) {
             return $this->get_responses[$url];
@@ -603,7 +603,7 @@ define('E_MOCK_FETCHER_EXCEPTION', 'mock fetcher exception');
 define('E_ASSERTION_ERROR', 'assertion error');
 
 class _CheckAuthDetectingConsumer extends ConfigurableConsumer {
-    function _verifyDiscoveryResults($message, $endpoint)
+    function _verifyDiscoveryResults($message, $endpoint=null)
     {
         return $endpoint;
     }
@@ -1104,7 +1104,7 @@ class _VerifiedError extends Auth_OpenID_FailureResponse {
 }
 
 class Consumer_idResURLMismatch extends ConfigurableConsumer {
-    function _discoverAndVerify($to_match)
+    function _discoverAndVerify($claimed_id, $to_match_endpoints)
     {
         return new _VerifiedError(null, 'verified error');
     }
@@ -1148,7 +1148,7 @@ class Tests_Auth_OpenID_SetupNeeded extends _TestIdRes {
 }
 
 class TempConsumer extends ConfigurableConsumer {
-    function _verifyDiscoveryResults($message, $endpoint)
+    function _verifyDiscoveryResults($message, $endpoint=null)
     {
         return $endpoint;
     }
@@ -1468,7 +1468,7 @@ class Tests_Auth_OpenID_CheckAuthResponse extends _TestIdRes {
 class _IdResFetchFailingConsumer extends Auth_OpenID_GenericConsumer {
     var $message = 'fetch failed';
 
-    function _doIdRes($message, $endpoint)
+    function _doIdRes($message, $endpoint, $return_to)
     {
         return new Auth_OpenID_FailureResponse($endpoint,
                                                $this->message);
@@ -2051,7 +2051,7 @@ class IDPDrivenTest_Consumer1 extends ConfigurableConsumer {
         return true;
     }
 
-    function _verifyDiscoveryResults($identifier, $endpoint)
+    function _verifyDiscoveryResults($identifier, $endpoint=null)
     {
         call_user_func($this->failure_cb,
                        $endpoint === $this->check_endpoint);
@@ -2148,7 +2148,7 @@ class IDPDrivenTest extends PHPUnit_Framework_TestCase {
 global $__test_otherServer_text;
 $__test_otherServer_text = "__test_otherServer";
 class TestDiscoveryVerification_test_otherServer extends Auth_OpenID_GenericConsumer {
-    function _discoverAndVerify($to_match)
+    function _discoverAndVerify($claimed_id, $to_match_endpoints)
     {
         global $__test_otherServer_text;
         return new Auth_OpenID_FailureResponse(null, $__test_otherServer_text);

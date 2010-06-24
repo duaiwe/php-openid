@@ -697,7 +697,7 @@ class _NonFetcher extends _DiscoveryMockFetcher {
         return false;
     }
 
-    function get($url, $headers)
+    function get($url, $headers = null, $body = null)
     {
         $this->used = true;
     }

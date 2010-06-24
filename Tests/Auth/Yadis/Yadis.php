@@ -18,9 +18,15 @@ class Tests_Auth_Yadis_DiscoveryTest extends PHPUnit_Framework_TestCase {
         $this->num = $num;
     }
 
-    function getName()
+    function getName($withDataSet = TRUE)
     {
-        return "Yadis discovery test ".$this->num;
+        $name = "Yadis discovery test " . $this->num;
+
+        if ($withDataSet) {
+            $name .= $this->getDataSetAsString(FALSE);
+        }
+
+        return $name;
     }
 
     function runTest()
@@ -71,6 +77,7 @@ class Tests_Auth_Yadis_Yadis extends PHPUnit_Framework_TestSuite {
     function Tests_Auth_Yadis_Yadis()
     {
         $test_data = file_get_contents('http://www.openidenabled.com/resources/yadis-test/discover/manifest.txt');
+
 
         $test_cases = $this->parseTests($test_data);
 

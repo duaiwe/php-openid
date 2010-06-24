@@ -27,9 +27,15 @@ class Tests_Auth_OpenID_Link extends PHPUnit_Framework_TestCase {
         $this->parser = new Auth_OpenID_Parse();
     }
 
-    function getName()
+    function getName($withDataSet = TRUE)
     {
-        return $this->desc;
+        $name = $this->desc;
+
+		if ($withDataSet) {
+			$name .= $this->getDataSetAsString(FALSE);
+		}
+
+		return $name;
     }
 
     function runTest()

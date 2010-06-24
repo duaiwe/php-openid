@@ -152,13 +152,19 @@ class _TestCase extends PHPUnit_Framework_TestCase {
         }
     }
 
-    function getName()
+    function getName($withDataSet = TRUE)
     {
         if ($this->input_url) {
-            return $this->input_url;
+            $name = $this->input_url;
         } else {
-            return $this->input_name;
+            $name = $this->input_name;
         }
+
+		if ($withDataSet) {
+			$name .= $this->getDataSetAsString(FALSE);
+		}
+
+		return $name;
     }
 }
 

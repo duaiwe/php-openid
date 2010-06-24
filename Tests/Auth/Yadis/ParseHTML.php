@@ -27,9 +27,15 @@ class Tests_Auth_Yadis_ParseTest extends PHPUnit_Framework_TestCase {
         $this->parser = new Auth_Yadis_ParseHTML();
     }
 
-    function getName()
+    function getName($withDataSet = TRUE)
     {
-        return $this->comment;
+        $name = $this->comment;
+
+		if ($withDataSet) {
+			$name .= $this->getDataSetAsString(FALSE);
+		}
+
+		return $name;
     }
 
     function runTest()

@@ -18,7 +18,7 @@ class __VerifiedError extends Auth_OpenID_FailureResponse {
 }
 
 class VerifyDisco_Consumer_verifiedError extends Auth_OpenID_GenericConsumer {
-    function _discoverAndVerify($to_match)
+    function _discoverAndVerify($claimed_id, $to_match_endpoints)
     {
         return new __VerifiedError(null, 'verified error');
     }
@@ -263,7 +263,7 @@ class Tests_openid1UsePreDiscoveredWrongType extends _DiscoverAndVerify {
 class Tests_openID2NoEndpointDoesDisco_sentinel extends Auth_OpenID_GenericConsumer {
     var $sentinel = 'blah';
 
-    function _discoverAndVerify($to_match)
+    function _discoverAndVerify($claimed_id, $to_match_endpoints)
     {
         return $this->sentinel;
     }
@@ -272,7 +272,7 @@ class Tests_openID2NoEndpointDoesDisco_sentinel extends Auth_OpenID_GenericConsu
 class Tests_openID2NoEndpointDoesDisco_failure extends Auth_OpenID_GenericConsumer {
     var $failure_message = 'A fake failure response message';
 
-    function _verifyDiscoverySingle($to_match)
+    function _verifyDiscoverySingle($endpoint, $to_match)
     {
         return new Auth_OpenID_FailureResponse(null, $this->failure_message);
     }
