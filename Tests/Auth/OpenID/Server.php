@@ -218,7 +218,7 @@ class Tests_Auth_OpenID_Test_Decode extends PHPUnit_Framework_TestCase {
 
         $r = $this->decoder->decode($args);
 
-        $this->assertTrue(is_a($r, 'Auth_OpenID_ServerError'));
+        $this->assertTrue($r instanceof Auth_OpenID_ServerError);
     }
 
     function test_bad()
@@ -245,7 +245,7 @@ class Tests_Auth_OpenID_Test_Decode extends PHPUnit_Framework_TestCase {
             'openid.some.extension' => 'junk');
 
         $r = $this->decoder->decode($args);
-        $this->assertTrue(is_a($r, 'Auth_OpenID_CheckIDRequest'));
+        $this->assertTrue($r instanceof Auth_OpenID_CheckIDRequest);
         $this->assertEquals($r->mode, "checkid_immediate");
         $this->assertEquals($r->immediate, true);
         $this->assertEquals($r->identity, $this->id_url);
@@ -264,7 +264,7 @@ class Tests_Auth_OpenID_Test_Decode extends PHPUnit_Framework_TestCase {
             'openid.trust_root' => $this->tr_url);
 
         $r = $this->decoder->decode($args);
-        $this->assertTrue(is_a($r, 'Auth_OpenID_CheckIDRequest'));
+        $this->assertTrue($r instanceof Auth_OpenID_CheckIDRequest);
         $this->assertEquals($r->mode, "checkid_setup");
         $this->assertEquals($r->immediate, false);
         $this->assertEquals($r->identity, $this->id_url);
@@ -285,7 +285,7 @@ class Tests_Auth_OpenID_Test_Decode extends PHPUnit_Framework_TestCase {
             );
 
         $r = $this->decoder->decode($args);
-        $this->assertTrue(is_a($r, 'Auth_OpenID_CheckIDRequest'));
+        $this->assertTrue($r instanceof Auth_OpenID_CheckIDRequest);
         $this->assertEquals($r->mode, "checkid_setup");
         $this->assertEquals($r->immediate, False);
         $this->assertEquals($r->identity, $this->id_url);
@@ -306,7 +306,7 @@ class Tests_Auth_OpenID_Test_Decode extends PHPUnit_Framework_TestCase {
             );
 
         $result = $this->decoder->decode($args);
-        $this->assertTrue(is_a($result, "Auth_OpenID_ServerError"));
+        $this->assertTrue($result instanceof Auth_OpenID_ServerError);
     }
 
     function test_checkidSetupNoIdentityOpenID2()
@@ -319,7 +319,7 @@ class Tests_Auth_OpenID_Test_Decode extends PHPUnit_Framework_TestCase {
             'openid.realm' => $this->tr_url);
 
         $r = $this->decoder->decode($args);
-        $this->assertTrue(is_a($r, 'Auth_OpenID_CheckIDRequest'));
+        $this->assertTrue($r instanceof Auth_OpenID_CheckIDRequest);
         $this->assertEquals($r->mode, "checkid_setup");
         $this->assertEquals($r->immediate, false);
         $this->assertEquals($r->identity, null);
@@ -356,12 +356,11 @@ class Tests_Auth_OpenID_Test_Decode extends PHPUnit_Framework_TestCase {
 
         $req = $this->decoder->decode($args);
 
-        $this->assertTrue(is_a($req,
-                               'Auth_OpenID_CheckIDRequest'));
+        $this->assertTrue($req instanceof Auth_OpenID_CheckIDRequest);
 
-        $this->assertTrue(is_a($req->answer(false), 'Auth_OpenID_NoReturnToError'));
-        $this->assertTrue(is_a($req->encodeToURL('bogus'), 'Auth_OpenID_NoReturnToError'));
-        $this->assertTrue(is_a($req->getCancelURL(), 'Auth_OpenID_NoReturnToError'));
+        $this->assertTrue($req->answer(false) instanceof Auth_OpenID_NoReturnToError);
+        $this->assertTrue($req->encodeToURL('bogus') instanceof Auth_OpenID_NoReturnToError);
+        $this->assertTrue($req->getCancelURL() instanceof Auth_OpenID_NoReturnToError);
     }
 
     function test_checkidSetupRealmRequiredOpenID2()
@@ -376,8 +375,7 @@ class Tests_Auth_OpenID_Test_Decode extends PHPUnit_Framework_TestCase {
             'openid.identity' => $this->id_url,
             'openid.assoc_handle' => $this->assoc_handle);
 
-        $this->assertTrue(is_a($this->decoder->decode($args),
-                               'Auth_OpenID_ServerError'));
+        $this->assertTrue($this->decoder->decode($args) instanceof Auth_OpenID_ServerError);
     }
 
     function test_checkidSetupBadReturn()
@@ -407,7 +405,7 @@ class Tests_Auth_OpenID_Test_Decode extends PHPUnit_Framework_TestCase {
             'openid.trust_root' => 'http://not-the-return-place.unittest/');
 
         $result = $this->decoder->decode($args);
-        $this->assertTrue(is_a($result, 'Auth_OpenID_UntrustedReturnURL'));
+        $this->assertTrue($result instanceof Auth_OpenID_UntrustedReturnURL);
     }
 
     function test_checkAuth()
@@ -422,7 +420,7 @@ class Tests_Auth_OpenID_Test_Decode extends PHPUnit_Framework_TestCase {
             'openid.baz' => 'unsigned');
 
         $r = $this->decoder->decode($args);
-        $this->assertTrue(is_a($r, 'Auth_OpenID_CheckAuthRequest'));
+        $this->assertTrue($r instanceof Auth_OpenID_CheckAuthRequest);
         $this->assertEquals($r->mode, 'check_authentication');
         $this->assertEquals($r->sig, 'sigblob');
     }
@@ -438,7 +436,7 @@ class Tests_Auth_OpenID_Test_Decode extends PHPUnit_Framework_TestCase {
             'openid.baz' => 'unsigned');
 
         $r = $this->decoder->decode($args);
-        $this->assertTrue(is_a($r, 'Auth_OpenID_ServerError'));
+        $this->assertTrue($r instanceof Auth_OpenID_ServerError);
     }
 
     function test_checkAuthAndInvalidate()
@@ -454,7 +452,7 @@ class Tests_Auth_OpenID_Test_Decode extends PHPUnit_Framework_TestCase {
             'openid.baz' => 'unsigned');
 
         $r = $this->decoder->decode($args);
-        $this->assertTrue(is_a($r, 'Auth_OpenID_CheckAuthRequest'));
+        $this->assertTrue($r instanceof Auth_OpenID_CheckAuthRequest);
         $this->assertEquals($r->invalidate_handle, '[[SMART_handle]]');
     }
 
@@ -470,7 +468,7 @@ class Tests_Auth_OpenID_Test_Decode extends PHPUnit_Framework_TestCase {
                       'openid.dh_consumer_public' => "Rzup9265tw==");
 
         $r = $this->decoder->decode($args);
-        $this->assertTrue(is_a($r, 'Auth_OpenID_AssociateRequest'));
+        $this->assertTrue($r instanceof Auth_OpenID_AssociateRequest);
         $this->assertEquals($r->mode, "associate");
         $this->assertEquals($r->session->session_type, "DH-SHA1");
         $this->assertEquals($r->assoc_type, "HMAC-SHA1");
@@ -505,7 +503,7 @@ class Tests_Auth_OpenID_Test_Decode extends PHPUnit_Framework_TestCase {
             'openid.dh_consumer_public' => "donkeydonkeydonkey");
 
         $r = $this->decoder->decode($args);
-        $this->assertTrue(is_a($r, 'Auth_OpenID_ServerError'));
+        $this->assertTrue($r instanceof Auth_OpenID_ServerError);
     }
     */
 
@@ -530,7 +528,7 @@ class Tests_Auth_OpenID_Test_Decode extends PHPUnit_Framework_TestCase {
             'openid.dh_gen' => $lib->longToBase64($ALT_GEN));
 
         $r = $this->decoder->decode($args);
-        $this->assertTrue(is_a($r, 'Auth_OpenID_AssociateRequest'));
+        $this->assertTrue($r instanceof Auth_OpenID_AssociateRequest);
         $this->assertEquals($r->mode, "associate");
         $this->assertEquals($r->session->session_type, "DH-SHA1");
         $this->assertEquals($r->assoc_type, "HMAC-SHA1");
@@ -557,7 +555,7 @@ class Tests_Auth_OpenID_Test_Decode extends PHPUnit_Framework_TestCase {
         $r = $this->decoder->decode($args);
         print_r($r);
 
-        $this->assertTrue(is_a($r, 'Auth_OpenID_ServerError'));
+        $this->assertTrue($r instanceof Auth_OpenID_ServerError);
     }
     */
 
@@ -577,7 +575,7 @@ class Tests_Auth_OpenID_Test_Decode extends PHPUnit_Framework_TestCase {
             'openid.dh_modulus' => 'pizza');
 
         $r = $this->decoder->decode($args);
-        $this->assertTrue(is_a($r, 'Auth_OpenID_ServerError'));
+        $this->assertTrue($r instanceof Auth_OpenID_ServerError);
     }
 
     function test_associateWeirdSession()
@@ -588,7 +586,7 @@ class Tests_Auth_OpenID_Test_Decode extends PHPUnit_Framework_TestCase {
             'openid.dh_consumer_public' => "YQ==\n");
 
         $r = $this->decoder->decode($args);
-        $this->assertTrue(is_a($r, 'Auth_OpenID_ServerError'));
+        $this->assertTrue($r instanceof Auth_OpenID_ServerError);
     }
 
     function test_associatePlain()
@@ -596,7 +594,7 @@ class Tests_Auth_OpenID_Test_Decode extends PHPUnit_Framework_TestCase {
         $args = array('openid.mode' => 'associate');
 
         $r = $this->decoder->decode($args);
-        $this->assertTrue(is_a($r, 'Auth_OpenID_AssociateRequest'));
+        $this->assertTrue($r instanceof Auth_OpenID_AssociateRequest);
         $this->assertEquals($r->mode, "associate");
         $this->assertEquals($r->session->session_type, "no-encryption");
         $this->assertEquals($r->assoc_type, "HMAC-SHA1");
@@ -622,7 +620,7 @@ class Tests_Auth_OpenID_Test_Decode extends PHPUnit_Framework_TestCase {
 
         $result = $this->decoder->decode($args);
 
-        $this->assertTrue(is_a($result, 'Auth_OpenID_ServerError'));
+        $this->assertTrue($result instanceof Auth_OpenID_ServerError);
 
         // Assert that the ProtocolError does have a Message attached
         // to it, even though the request wasn't a well-formed Message.
@@ -934,7 +932,7 @@ class Tests_Auth_OpenID_SigningEncode extends PHPUnit_Framework_TestCase {
     {
         $this->encoder->signatory = null;
         $result = $this->encoder->encode($this->response);
-        if (!is_a($result, 'Auth_OpenID_ServerError')) {
+        if (!($result instanceof Auth_OpenID_ServerError)) {
             $this->fail(sprintf("Expected Auth_OpenID_ServerError, got %s",
                                 gettype($result)));
         }
@@ -983,7 +981,7 @@ class Tests_Auth_OpenID_SigningEncode extends PHPUnit_Framework_TestCase {
     {
         $this->response->fields->setArg(Auth_OpenID_OPENID_NS, 'sig', 'priorSig==');
         $result = $this->encoder->encode($this->response);
-        if (!is_a($result, 'Auth_OpenID_AlreadySigned')) {
+        if (!($result instanceof Auth_OpenID_AlreadySigned)) {
             $this->fail(sprintf("Expected Auth_OpenID_AlreadySigned " .
                                 "instance, got %s", gettype($result)));
         }
@@ -1024,7 +1022,7 @@ class Tests_Auth_OpenID_CheckID extends PHPUnit_Framework_TestCase {
         $result = Auth_OpenID_CheckIDRequest::fromMessage(
                        $msg, $this->server);
 
-        $this->assertTrue(is_a($result, 'Auth_OpenID_ServerError'));
+        $this->assertTrue($result instanceof Auth_OpenID_ServerError);
     }
 
     function test_fromMessageIdentityWithoutClaimedIDOpenID2()
@@ -1040,7 +1038,7 @@ class Tests_Auth_OpenID_CheckID extends PHPUnit_Framework_TestCase {
         $result = Auth_OpenID_CheckIDRequest::fromMessage(
                        $msg, $this->server);
 
-        $this->assertTrue(is_a($result, 'Auth_OpenID_ServerError'));
+        $this->assertTrue($result instanceof Auth_OpenID_ServerError);
     }
 
     function test_fromMessageWithEmptyTrustRoot()
@@ -1122,7 +1120,7 @@ class Tests_Auth_OpenID_CheckID extends PHPUnit_Framework_TestCase {
         $this->request->trust_root = "http://foo.unittest/17";
         $this->request->return_to = "http://foo.unittest/39";
         $result = $this->request->answer(true);
-        if (!is_a($result, 'Auth_OpenID_UntrustedReturnURL')) {
+        if (!($result instanceof Auth_OpenID_UntrustedReturnURL)) {
             $this->fail(sprintf("Expected Auth_OpenID_UntrustedReturnURL, " .
                                 "got %s", gettype($result)));
         }
@@ -1131,7 +1129,7 @@ class Tests_Auth_OpenID_CheckID extends PHPUnit_Framework_TestCase {
 
     function _expectAnswer($answer, $identity=null, $claimed_id=null)
     {
-        if (is_a($answer, 'Auth_OpenID_ServerError')) {
+        if ($answer instanceof Auth_OpenID_ServerError) {
             $this->fail("Got ServerError, expected valid response in ".$this->getName());
             return;
         }
@@ -1201,8 +1199,8 @@ class Tests_Auth_OpenID_CheckID extends PHPUnit_Framework_TestCase {
         // OpenID 2.0?
         // $this->failUnlessRaises(
         //     ValueError, $this->request->answer, true, identity="=V");
-        $this->assertTrue(is_a($this->request->answer(true, null, "=V"),
-                               'Auth_OpenID_ServerError'));
+        $this->assertTrue($this->request->answer(true, null, "=V") instanceof
+                               Auth_OpenID_ServerError);
     }
 
     function test_answerAllowWithIdentity()
@@ -1240,7 +1238,7 @@ class Tests_Auth_OpenID_CheckID extends PHPUnit_Framework_TestCase {
 
         $result = Auth_OpenID_CheckIDRequest::fromMessage(
                        $msg, $this->server);
-        $this->assertTrue(is_a($result, 'Auth_OpenID_ServerError'));
+        $this->assertTrue($result instanceof Auth_OpenID_ServerError);
     }
 
     function test_answerAllowNoEndpointOpenID1()
@@ -1305,7 +1303,7 @@ class Tests_Auth_OpenID_CheckID extends PHPUnit_Framework_TestCase {
                                          $selected_id,
                                          $claimed_id);
 
-        $this->assertTrue(is_a($result, "Auth_OpenID_ServerError"),
+        $this->assertTrue(($result instanceof Auth_OpenID_ServerError),
                           var_export($result, true));
     }
 
@@ -1316,7 +1314,7 @@ class Tests_Auth_OpenID_CheckID extends PHPUnit_Framework_TestCase {
         // $this->failUnlessRaises(ValueError, $this->request->answer, true,
         //                       identity="http://pebbles.unittest/");
         $result = $this->request->answer(true, null, "http://pebbles.unittest/");
-        $this->assertTrue(is_a($result, "Auth_OpenID_ServerError"));
+        $this->assertTrue($result instanceof Auth_OpenID_ServerError);
     }
 
     function test_answerAllowNoIdentityOpenID1()
@@ -1327,14 +1325,14 @@ class Tests_Auth_OpenID_CheckID extends PHPUnit_Framework_TestCase {
         // $this->failUnlessRaises(ValueError, $this->request->answer, true,
         //                       identity=null);
         $result = $this->request->answer(true);
-        $this->assertTrue(is_a($result, "Auth_OpenID_ServerError"));
+        $this->assertTrue($result instanceof Auth_OpenID_ServerError);
     }
 
     function test_answerAllowForgotEndpoint()
     {
         $this->request->server->op_endpoint = null;
         $result = $this->request->answer(true);
-        $this->assertTrue(is_a($result, "Auth_OpenID_ServerError"));
+        $this->assertTrue($result instanceof Auth_OpenID_ServerError);
     }
 
     function test_checkIDWithNoIdentityOpenID1()
@@ -1350,7 +1348,7 @@ class Tests_Auth_OpenID_CheckID extends PHPUnit_Framework_TestCase {
         //                       msg, $this->server);
         $result = Auth_OpenID_CheckIDRequest::fromMessage($msg, $this->server);
 
-        $this->assertTrue(is_a($result, 'Auth_OpenID_ServerError'));
+        $this->assertTrue($result instanceof Auth_OpenID_ServerError);
     }
 
     function test_trustRootOpenID1()
@@ -1391,7 +1389,7 @@ class Tests_Auth_OpenID_CheckID extends PHPUnit_Framework_TestCase {
         $server_url = 'http://openid-server.unittest/';
         $result = $this->request->encodeToURL($server_url);
 
-        $this->assertFalse(is_a($result, 'Auth_OpenID_ServerError'));
+        $this->assertFalse($result instanceof Auth_OpenID_ServerError);
 
         // How to check?  How about a round-trip test.
         list($base, $result_args) = explode("?", $result, 2);
@@ -1477,7 +1475,7 @@ class Tests_Auth_OpenID_CheckID extends PHPUnit_Framework_TestCase {
         $this->request->mode = 'checkid_immediate';
         $this->request->immediate = true;
         $result = $this->request->getCancelURL();
-        if (!is_a($result, 'Auth_OpenID_ServerError')) {
+        if (!($result instanceof Auth_OpenID_ServerError)) {
             $this->fail(sprintf("Expected Auth_OpenID_ServerError, got %s",
                                 gettype($result)));
         }
@@ -1781,7 +1779,7 @@ class Tests_Auth_OpenID_Associate extends PHPUnit_Framework_TestCase {
         foreach ($bad_request_argss as $request_args) {
             $message = Auth_OpenID_Message::fromPostArgs($request_args);
             $result = Auth_OpenID_Associaterequest::fromMessage($message);
-            $this->assertTrue(is_a($result, 'Auth_OpenID_ServerError'));
+            $this->assertTrue($result instanceof Auth_OpenID_ServerError);
         }
     }
 
@@ -1879,7 +1877,7 @@ class Tests_Auth_OpenID_Associate extends PHPUnit_Framework_TestCase {
         foreach ($bad_request_argss as $request_args) {
             $message = Auth_OpenID_Message::fromPostArgs($request_args);
             $result = Auth_OpenID_AssociateRequest::fromMessage($message);
-            $this->assertTrue(is_a($result, 'Auth_OpenID_ServerError'));
+            $this->assertTrue($result instanceof Auth_OpenID_ServerError);
         }
     }
 
@@ -2132,7 +2130,7 @@ class Tests_Auth_OpenID_ServerTest extends PHPUnit_Framework_TestCase {
 
         $result = Auth_OpenID_AssociateRequest::fromMessage($msg);
 
-        $this->assertTrue(is_a($result, 'Auth_OpenID_ServerError'));
+        $this->assertTrue($result instanceof Auth_OpenID_ServerError);
     }
 
     function test_checkAuth()

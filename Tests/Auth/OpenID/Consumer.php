@@ -1126,7 +1126,7 @@ class Tests_idResURLMismatch extends _TestIdRes {
 
         $message = Auth_OpenID_Message::fromPostArgs($query);
         $r = $this->consumer->complete($message, $this->endpoint, null);
-        $this->assertTrue(is_a($r, '_VerifiedError'));
+        $this->assertTrue($r instanceof _VerifiedError);
     }
 }
 
@@ -1373,7 +1373,7 @@ class TestReturnToArgs extends PHPUnit_Framework_TestCase {
 
             $m->setArg(Auth_OpenID_OPENID_NS, 'return_to', $good_return_to);
             $result = $this->consumer->complete($m, $endpoint, $return_to);
-            $this->assertTrue(is_a($result, 'Auth_OpenID_CancelResponse'));
+            $this->assertTrue($result instanceof Auth_OpenID_CancelResponse);
         }
     }
 }
@@ -2276,7 +2276,7 @@ class TestCreateAssociationRequest extends PHPUnit_Framework_TestCase {
         list($session, $args) = $this->consumer->_createAssociateRequest(
                        $this->endpoint, $this->assoc_type, $session_type);
 
-        $this->assertTrue(is_a($session, 'Auth_OpenID_PlainTextConsumerSession'));
+        $this->assertTrue($session instanceof Auth_OpenID_PlainTextConsumerSession);
 
         $expected = Auth_OpenID_Message::fromOpenIDArgs(
                                                         array('ns' => Auth_OpenID_OPENID2_NS,
@@ -2301,7 +2301,7 @@ class TestCreateAssociationRequest extends PHPUnit_Framework_TestCase {
         list($session, $args) = $this->consumer->_createAssociateRequest(
                            $this->endpoint, $this->assoc_type, $session_type);
 
-        $this->assertTrue(is_a($session, 'Auth_OpenID_PlainTextConsumerSession'));
+        $this->assertTrue($session instanceof Auth_OpenID_PlainTextConsumerSession);
 
         $expected = Auth_OpenID_Message::fromOpenIDArgs(
                                                         array('ns' => Auth_OpenID_OPENID2_NS,
@@ -2325,7 +2325,7 @@ class TestCreateAssociationRequest extends PHPUnit_Framework_TestCase {
         $assoc = $this->consumer->_extractAssociation($response, $session);
 
         $this->assertTrue($assoc !== null);
-        $this->assertTrue(is_a($assoc, 'Auth_OpenID_Association'));
+        $this->assertTrue($assoc instanceof Auth_OpenID_Association);
         $this->assertTrue($assoc->assoc_type = $this->assoc_type);
         $this->assertTrue($assoc->session_type = $session_type);
     }
@@ -2337,7 +2337,7 @@ class TestCreateAssociationRequest extends PHPUnit_Framework_TestCase {
         list($session, $args) = $this->consumer->_createAssociateRequest(
                        $this->endpoint, $this->assoc_type, $session_type);
 
-        $this->assertTrue(is_a($session, 'Auth_OpenID_PlainTextConsumerSession'));
+        $this->assertTrue($session instanceof Auth_OpenID_PlainTextConsumerSession);
         $this->assertEquals(Auth_OpenID_Message::fromOpenIDArgs(array('mode'=>'associate',
                                                                       'assoc_type'=>$this->assoc_type)),
                             $args);
@@ -2354,8 +2354,8 @@ class TestCreateAssociationRequest extends PHPUnit_Framework_TestCase {
         list($session, $args) = $this->consumer->_createAssociateRequest(
                        $this->endpoint, $this->assoc_type, $session_type);
 
-        $this->assertTrue(is_a($session,
-                               'Auth_OpenID_DiffieHellmanSHA1ConsumerSession'));
+        $this->assertTrue($session instanceof
+                               Auth_OpenID_DiffieHellmanSHA1ConsumerSession);
 
         // This is a random base-64 value, so just check that it's
         // present.
@@ -2498,7 +2498,7 @@ class Tests_Auth_OpenID_KVPost extends PHPUnit_Framework_TestCase {
         $response->body = "error:bonk\nerror_code:7\n";
         $result = Auth_OpenID_GenericConsumer::_httpResponseToMessage($response, $this->server_url);
 
-        $this->assertTrue(is_a($result, 'Auth_OpenID_ServerErrorContainer'));
+        $this->assertTrue($result instanceof Auth_OpenID_ServerErrorContainer);
         $this->assertEquals($result->error_text, 'bonk');
         $this->assertEquals($result->error_code, '7');
     }

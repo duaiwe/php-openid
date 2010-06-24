@@ -82,7 +82,7 @@ class Tests_openID1Fallback1_0 extends _DiscoverAndVerify {
         $actual_endpoint = $this->consumer->_verifyDiscoveryResults(
             $resp_msg, null);
 
-        $this->assertTrue(is_a($actual_endpoint, "Auth_OpenID_ServiceEndpoint"));
+        $this->assertTrue($actual_endpoint instanceof Auth_OpenID_ServiceEndpoint);
 
         $this->assertEquals($expected_endpoint->local_id,
                             $actual_endpoint->local_id);
@@ -254,7 +254,7 @@ class Tests_openid1UsePreDiscoveredWrongType extends _DiscoverAndVerify {
 
         $result = $this->consumer->_verifyDiscoveryResults($msg, $endpoint);
         $this->failUnlessProtocolError($result);
-        $this->assertTrue(is_a($result, '__VerifiedError'));
+        $this->assertTrue($result instanceof __VerifiedError);
     }
 }
 

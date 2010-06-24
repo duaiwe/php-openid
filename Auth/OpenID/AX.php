@@ -43,7 +43,7 @@ class Auth_OpenID_AX {
      */
     static function isError($thing)
     {
-        return is_a($thing, 'Auth_OpenID_AX_Error');
+        return ($thing instanceof Auth_OpenID_AX_Error);
     }
 }
 

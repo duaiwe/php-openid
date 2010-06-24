@@ -266,7 +266,7 @@ class SRegRequestTest extends PHPUnit_Framework_TestCase {
         $openid_req->message =& $msg;
 
         $req = TestingReq::fromOpenIDRequest($openid_req, $this);
-        $this->assertTrue(is_a($req, 'TestingReq'));
+        $this->assertTrue($req instanceof TestingReq);
     }
 
     function test_parseExtensionArgs_empty()

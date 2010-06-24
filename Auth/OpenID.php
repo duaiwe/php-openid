@@ -123,7 +123,7 @@ class Auth_OpenID {
      */
     static function isFailure($thing)
     {
-        return is_a($thing, 'Auth_OpenID_FailureResponse');
+        return ($thing instanceof Auth_OpenID_FailureResponse);
     }
 
     /**

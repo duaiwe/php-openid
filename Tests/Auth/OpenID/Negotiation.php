@@ -22,7 +22,7 @@ class ErrorRaisingConsumer extends Auth_OpenID_GenericConsumer {
     function _requestAssociation($endpoint, $assoc_type, $session_type)
     {
         $m = array_pop($this->return_messages);
-        if (is_a($m, 'Auth_OpenID_Message')) {
+        if ($m instanceof Auth_OpenID_Message) {
             return Auth_OpenID_ServerErrorContainer::fromMessage($m);
         } else if (Auth_OpenID::isFailure($m)) {
             return $m;

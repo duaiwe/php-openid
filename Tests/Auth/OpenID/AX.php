@@ -695,7 +695,7 @@ class FetchResponseTest extends PHPUnit_Framework_TestCase {
         $resp = new Auth_OpenID_SuccessResponse($e, $msg, $sf);
         $ax_resp = Auth_OpenID_AX_FetchResponse::fromSuccessResponse($resp, false);
         $this->assertFalse($ax_resp === null);
-        $this->assertTrue(is_a($ax_resp, 'Auth_OpenID_AX_FetchResponse'));
+        $this->assertTrue($ax_resp instanceof Auth_OpenID_AX_FetchResponse);
         $values = $ax_resp->get($uri);
         $this->assertEquals(array($value), $values);
     }
