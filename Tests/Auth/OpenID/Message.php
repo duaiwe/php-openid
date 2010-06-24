@@ -4,10 +4,27 @@
  * Unit tests for the Auth_OpenID_Message implementation.
  */
 
+require_once "Tests/Auth/OpenID/TestSuite.php";
 require_once "Auth/OpenID/Message.php";
 require_once "Auth/OpenID.php";
 
-class MessageTest extends PHPUnit_Framework_TestCase {
+class Auth_OpenID_MessageSuite extends Auth_OpenID_TestSuite {
+    public static function suite() {
+        $suite = new Auth_OpenID_MessageSuite();
+
+        $suite->addTestSuite('Tests_Auth_OpenID_EmptyMessage');
+        $suite->addTestSuite('Tests_Auth_OpenID_OpenID1Message');
+        $suite->addTestSuite('Tests_Auth_OpenID_OpenID2Message');
+        $suite->addTestSuite('Tests_Auth_OpenID_NamespaceMap');
+        $suite->addTestSuite('Tests_Auth_OpenID_OpenID1ExplicitMessage');
+        $suite->addTestSuite('Tests_Auth_OpenID_GeneralMessageTest');
+
+        return $suite;
+    }
+}
+
+
+abstract class MessageTest extends PHPUnit_Framework_TestCase {
     function _argTest($ns, $key, $expected = null)
     {
         $a_default = 'a bogus default value';
@@ -1234,18 +1251,4 @@ class Tests_Auth_OpenID_NamespaceMap extends PHPUnit_Framework_TestCase {
         $this->assertTrue(count($it) == 23);
     }
 }
-
-class Tests_Auth_OpenID_Message extends PHPUnit_Framework_TestCase {
-}
-
-global $Tests_Auth_OpenID_Message_other;
-$Tests_Auth_OpenID_Message_other = array(
-                                         new Tests_Auth_OpenID_EmptyMessage(),
-                                         new Tests_Auth_OpenID_OpenID1Message(),
-                                         new Tests_Auth_OpenID_OpenID2Message(),
-                                         new Tests_Auth_OpenID_NamespaceMap(),
-                                         new Tests_Auth_OpenID_OpenID1ExplicitMessage(),
-                                         new Tests_Auth_OpenID_GeneralMessageTest()
-                                         );
-
 
