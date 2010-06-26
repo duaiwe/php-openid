@@ -8,6 +8,24 @@ require_once "Auth/OpenID/AX.php";
 require_once "Auth/OpenID/Message.php";
 require_once "Auth/OpenID/Consumer.php";
 require_once "Auth/OpenID/Server.php";
+require_once "Tests/Auth/OpenID/TestSuite.php";
+
+class Auth_OpenID_AXSuite extends Auth_OpenID_TestSuite {
+    public static function suite() {
+        $suite = new Auth_OpenID_NonceSuite();
+
+        $suite->addTestSuite('StoreResponseTest');
+        $suite->addTestSuite('StoreRequestTest');
+        $suite->addTestSuite('FetchResponseTest');
+        $suite->addTestSuite('FetchRequestTest');
+        $suite->addTestSuite('ParseAXValuesTest');
+        $suite->addTestSuite('ToTypeURIsTest');
+        $suite->addTestSuite('AttrInfoTest');
+        $suite->addTestSuite('AXMessageTest');
+
+        return $suite;
+    }
+}
 
 class BogusAXMessage extends Auth_OpenID_AX_Message {
     var $mode = 'bogus';
@@ -112,7 +130,7 @@ class ParseAXValuesTest extends PHPUnit_Framework_TestCase {
         $msg = new Auth_OpenID_AX_KeyValueMessage();
         $result = $msg->parseExtensionArgs($ax_args);
         $this->assertTrue(Auth_OpenID_AX::isError($result));
-        $this->assertTrue($result->message);
+        $this->assertTrue(!empty($result->message));
     }
 
     function failUnlessAXValues($ax_args, $expected_args)
@@ -397,7 +415,7 @@ class FetchRequestTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals(array($this->type_a), $this->msg->iterTypes());
         $attr_info = Auth_OpenID::arrayGet($this->msg->requested_attributes,
                                            $this->type_a);
-        $this->assertTrue($attr_info);
+        $this->assertTrue(!empty($attr_info));
         $this->assertFalse($attr_info->required);
         $this->assertEquals($this->type_a, $attr_info->type_uri);
         $this->assertEquals($this->alias_a, $attr_info->alias);
@@ -460,8 +478,8 @@ class FetchRequestTest extends PHPUnit_Framework_TestCase {
             'ax.update_url' => 'http://different.site/path',
             'ax.mode' => 'fetch_request',
             ));
-		$openid_req = new Auth_OpenID_Request();
-		$openid_req->message =& $openid_req_msg;
+        $openid_req = new Auth_OpenID_Request();
+        $openid_req->message =& $openid_req_msg;
         $result = Auth_OpenID_AX_FetchRequest::fromOpenIDRequest(
                                                      $openid_req);
         $this->assertTrue(Auth_OpenID_AX::isError($result));
@@ -477,8 +495,8 @@ class FetchRequestTest extends PHPUnit_Framework_TestCase {
             'ax.update_url' => 'http://different.site/path',
             'ax.mode' => 'fetch_request',
             ));
-		$openid_req = new Auth_OpenID_Request();
-		$openid_req->message =& $openid_req_msg;
+        $openid_req = new Auth_OpenID_Request();
+        $openid_req->message =& $openid_req_msg;
         $result = Auth_OpenID_AX_FetchRequest::fromOpenIDRequest($openid_req);
         $this->assertTrue(Auth_OpenID_AX::isError($result));
     }
@@ -493,8 +511,8 @@ class FetchRequestTest extends PHPUnit_Framework_TestCase {
             'ax.update_url' => 'http://example.com/realm/update_path',
             'ax.mode' => 'fetch_request',
             ));
-		$openid_req = new Auth_OpenID_Request();
-		$openid_req->message =& $openid_req_msg;
+        $openid_req = new Auth_OpenID_Request();
+        $openid_req->message =& $openid_req_msg;
         $fr = Auth_OpenID_AX_FetchRequest::fromOpenIDRequest($openid_req);
         $this->assertFalse(Auth_OpenID_AX::isError($fr));
     }
@@ -509,8 +527,8 @@ class FetchRequestTest extends PHPUnit_Framework_TestCase {
             'ax.update_url' => 'http://example.com/realm/update_path',
             'ax.mode' => 'fetch_request',
             ));
-		$openid_req = new Auth_OpenID_Request();
-		$openid_req->message =& $openid_req_msg;
+        $openid_req = new Auth_OpenID_Request();
+        $openid_req->message =& $openid_req_msg;
         $fr = Auth_OpenID_AX_FetchRequest::fromOpenIDRequest($openid_req);
         $this->assertFalse(Auth_OpenID_AX::isError($fr));
     }
@@ -746,7 +764,7 @@ class StoreResponseTest extends PHPUnit_Framework_TestCase {
     {
         $msg = new Auth_OpenID_AX_StoreResponse();
         $this->assertTrue($msg->succeeded());
-        $this->assertFalse($msg->error_message);
+        $this->assertNull($msg->error_message);
         $this->assertEquals(array('mode' => 'store_response_success'),
                             $msg->getExtensionArgs());
     }
@@ -755,7 +773,7 @@ class StoreResponseTest extends PHPUnit_Framework_TestCase {
     {
         $msg = new Auth_OpenID_AX_StoreResponse(false);
         $this->assertFalse($msg->succeeded());
-        $this->assertFalse($msg->error_message);
+        $this->assertNull($msg->error_message);
         $this->assertEquals(array('mode' => 'store_response_failure'),
                             $msg->getExtensionArgs());
     }
@@ -768,25 +786,6 @@ class StoreResponseTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals($reason, $msg->error_message);
         $this->assertEquals(array('mode' => 'store_response_failure',
                                   'error' => $reason), $msg->getExtensionArgs());
-    }
-}
-
-class Tests_Auth_OpenID_AX extends PHPUnit_Framework_TestSuite {
-    function getName()
-    {
-        return "Tests_Auth_OpenID_AX";
-    }
-
-    function Tests_Auth_OpenID_AX()
-    {
-        $this->addTestSuite('StoreResponseTest');
-        $this->addTestSuite('StoreRequestTest');
-        $this->addTestSuite('FetchResponseTest');
-        $this->addTestSuite('FetchRequestTest');
-        $this->addTestSuite('ParseAXValuesTest');
-        $this->addTestSuite('ToTypeURIsTest');
-        $this->addTestSuite('AttrInfoTest');
-        $this->addTestSuite('AXMessageTest');
     }
 }
 

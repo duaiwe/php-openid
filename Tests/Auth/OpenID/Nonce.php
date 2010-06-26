@@ -13,117 +13,35 @@
  * @license http://www.apache.org/licenses/LICENSE-2.0 Apache
  */
 
+require_once "Tests/Auth/OpenID/TestSuite.php";
 require_once 'Auth/OpenID/Nonce.php';
 
-define('Tests_Auth_OpenID_nonce_re',
-       '/\A\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\dZ/');
+class Auth_OpenID_NonceSuite extends Auth_OpenID_TestSuite {
+    public static function suite() {
+        $suite = new Auth_OpenID_NonceSuite();
 
-class Tests_Auth_OpenID_Nonce extends PHPUnit_Framework_TestSuite {
-    function Tests_Auth_OpenID_Nonce()
-    {
-        $this->addTestSuite('Tests_Auth_OpenID_NonceTests');
-        $this->makeSplitTests();
-        $this->makeCheckTimestampTests();
-        $this->setName('Tests_Auth_OpenID_Nonce');
-    }
+        $suite->addTestSuite('Auth_OpenID_NonceTest');
+        $suite->addTestSuite('Auth_OpenID_Nonce_BadSplitTest');
+        $suite->addTestSuite('Auth_OpenID_Nonce_TimestampTest');
 
-    function makeSplitTests()
-    {
-        $cases = array(
-                       '',
-                       '1970-01-01T00:00:00+1:00',
-                       '1969-01-01T00:00:00Z',
-                       '1970-00-01T00:00:00Z',
-                       '1970.01-01T00:00:00Z',
-                       'Thu Sep  7 13:29:31 PDT 2006',
-                       'monkeys',
-                       );
-
-        foreach ($cases as $nonce_str) {
-            $this->_mkSplitTest($nonce_str);
-        }
-    }
-
-    function _mkSplitTest($nonce_str)
-    {
-        $test = new Tests_Auth_OpenID_Nonce_BadSplitCase($nonce_str);
-        $test->setName('BadNonceSplit ' . var_export($nonce_str, true));
-        $this->addTest($test);
-    }
-
-    function makeCheckTimestampTests()
-    {
-        $cases = array(
-                       // exact, no allowed skew
-                       array('1970-01-01T00:00:00Z', 0, 0, true),
-
-                       // exact, large skew
-                       array('1970-01-01T00:00:00Z', 1000, 0, true),
-
-                       // no allowed skew, one second old
-                       array('1970-01-01T00:00:00Z', 0, 1, false),
-
-                       // many seconds old, outside of skew
-                       array('1970-01-01T00:00:00Z', 10, 50, false),
-
-                       // one second old, one second skew allowed
-                       array('1970-01-01T00:00:00Z', 1, 1, true),
-
-                       // One second in the future, one second skew allowed
-                       array('1970-01-01T00:00:02Z', 1, 1, true),
-
-                       // two seconds in the future, one second skew allowed
-                       array('1970-01-01T00:00:02Z', 1, 0, false),
-
-                       // malformed nonce string
-                       array('monkeys', 0, 0, false)
-                       );
-
-        foreach ($cases as $case) {
-            $this->_mkCheckTest($case);
-        }
-    }
-
-    function _mkCheckTest($case)
-    {
-        list($nonce_str, $skew, $now, $expected) = $case;
-        $test = new Tests_Auth_OpenID_Nonce_TimestampCase(
-            $nonce_str, $skew, $now, $expected);
-        $test->setName('CheckTimestamp ' . var_export($nonce_str, true));
-        $this->addTest($test);
+        return $suite;
     }
 }
 
-class Tests_Auth_OpenID_Nonce_TimestampCase extends PHPUnit_Framework_TestCase {
-    function Tests_Auth_OpenID_Nonce_TimestampCase(
-        $nonce_str, $skew, $now, $expected)
-    {
-        $this->nonce_string = $nonce_str;
-        $this->allowed_skew = $skew;
-        $this->now = $now;
-        $this->expected = $expected;
-    }
+class Auth_OpenID_NonceTest extends PHPUnit_Framework_TestCase {
 
-    function runTest()
-    {
-        $actual = Auth_OpenID_checkTimestamp($this->nonce_string,
-                                             $this->allowed_skew,
-                                             $this->now);
-        $this->assertEquals($this->expected, $actual);
-    }
-}
+	private $regex = '/\A\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\dZ/';
 
-class Tests_Auth_OpenID_NonceTests extends PHPUnit_Framework_TestCase {
     function test_mkNonce()
     {
         $nonce_str = Auth_OpenID_mkNonce();
-        $this->assertTrue(preg_match(Tests_Auth_OpenID_nonce_re, $nonce_str));
+        $this->assertEquals(1, preg_match($this->regex, $nonce_str));
     }
 
     function test_mkNonce_when()
     {
         $nonce_str = Auth_OpenID_mkNonce(0);
-        $this->assertTrue(preg_match(Tests_Auth_OpenID_nonce_re, $nonce_str));
+        $this->assertEquals(1, preg_match($this->regex, $nonce_str));
         $tpart = substr($nonce_str, 0, 20);
         $this->assertEquals('1970-01-01T00:00:00Z', $tpart);
     }
@@ -143,24 +61,73 @@ class Tests_Auth_OpenID_NonceTests extends PHPUnit_Framework_TestCase {
     {
         $t = 42;;
         $nonce_str = Auth_OpenID_mkNonce($t);
-        $this->assertTrue(preg_match(Tests_Auth_OpenID_nonce_re, $nonce_str));
+        $this->assertEquals(1, preg_match($this->regex, $nonce_str));
         list($et, $salt) = Auth_OpenID_splitNonce($nonce_str);
         $this->assertEquals(6, strlen($salt));
         $this->assertEquals($et, $t);
     }
 }
 
-class Tests_Auth_OpenID_Nonce_BadSplitCase extends PHPUnit_Framework_TestCase {
-    function Tests_Auth_OpenID_Nonce_BadSplitCase($nonce_str)
-    {
-        $this->nonce_str = $nonce_str;
-    }
+class Auth_OpenID_Nonce_BadSplitTest extends PHPUnit_Framework_TestCase {
 
-    function runTest()
-    {
-        $result = Auth_OpenID_splitNonce($this->nonce_str);
+	function split_data() {
+		return array(
+			array(''),
+			array('1970-01-01T00:00:00+1:00'),
+			array('1969-01-01T00:00:00Z'),
+			array('1970-00-01T00:00:00Z'),
+			array('1970.01-01T00:00:00Z'),
+			array('Thu Sep  7 13:29:31 PDT 2006'),
+			array('monkeys'),
+		);
+	}
+
+	/**
+	 * @dataProvider split_data
+	 */
+	function test_split($nonce) {
+        $result = Auth_OpenID_splitNonce($nonce);
         $this->assertNull($result);
-    }
+	}
 }
 
+class Auth_OpenID_Nonce_TimestampTest extends PHPUnit_Framework_TestCase {
+
+	function timestamp_data() {
+		return array(
+		   // exact, no allowed skew
+		   array('1970-01-01T00:00:00Z', 0, 0, true),
+
+		   // exact, large skew
+		   array('1970-01-01T00:00:00Z', 1000, 0, true),
+
+		   // no allowed skew, one second old
+		   array('1970-01-01T00:00:00Z', 0, 1, false),
+
+		   // many seconds old, outside of skew
+		   array('1970-01-01T00:00:00Z', 10, 50, false),
+
+		   // one second old, one second skew allowed
+		   array('1970-01-01T00:00:00Z', 1, 1, true),
+
+		   // One second in the future, one second skew allowed
+		   array('1970-01-01T00:00:02Z', 1, 1, true),
+
+		   // two seconds in the future, one second skew allowed
+		   array('1970-01-01T00:00:02Z', 1, 0, false),
+
+		   // malformed nonce string
+		   array('monkeys', 0, 0, false)
+		);
+	}
+
+	/**
+	 * @dataProvider timestamp_data
+	 */
+    function test_timestamp($nonce, $skew, $now, $expected)
+    {
+        $actual = Auth_OpenID_checkTimestamp($nonce, $skew, $now);
+        $this->assertEquals($expected, $actual);
+    }
+}
 

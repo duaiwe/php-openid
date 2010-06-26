@@ -1,10 +1,23 @@
 <?php
 
+require_once "Tests/Auth/OpenID/TestSuite.php";
 require_once "Tests/Auth/OpenID/TestUtil.php";
 require_once "Tests/Auth/OpenID/MemStore.php";
 
 require_once "Auth/OpenID/Message.php";
 require_once "Auth/OpenID/Consumer.php";
+
+class Auth_OpenID_NegotiationSuite extends Auth_OpenID_TestSuite {
+    public static function suite() {
+        $suite = new Auth_OpenID_NegotiationSuite();
+
+        $suite->addTestSuite('TestOpenID2SessionNegotiation');
+        $suite->addTestSuite('TestOpenID1SessionNegotiation');
+        $suite->addTestSuite('TestNegotiatorBehaviors');
+
+        return $suite;
+    }
+}
 
 /**
  * A consumer whose _requestAssocation will return predefined results
@@ -326,21 +339,6 @@ class TestNegotiatorBehaviors extends PHPUnit_Framework_TestCase {
             $this->assertTrue(in_array(array($assoc_type, $typ),
                                        $this->n->allowed_types));
         }
-    }
-}
-
-class Tests_Auth_OpenID_Negotiation extends PHPUnit_Framework_TestSuite {
-
-    function getName()
-    {
-        return 'Tests_Auth_OpenID_Negotiation';
-    }
-
-    function Tests_Auth_OpenID_Negotiation()
-    {
-        $this->addTestSuite('TestNegotiatorBehaviors');
-        $this->addTestSuite('TestOpenID1SessionNegotiation');
-        $this->addTestSuite('TestOpenID2SessionNegotiation');
     }
 }
 

@@ -16,6 +16,8 @@
 require_once 'Auth/OpenID.php';
 
 class Tests_Auth_OpenID_Util extends PHPUnit_Framework_TestCase {
+
+    // TODO: refactor this test to better use phpunit framework if possible
     function test_base64()
     {
         // This is not good for international use, but PHP doesn't
@@ -73,72 +75,57 @@ class Tests_Auth_OpenID_Util extends PHPUnit_Framework_TestCase {
         }
     }
 
-    function test_urldefrag()
-    {
-        $cases = array(
-                       array('http://foo.com', 'http://foo.com'),
-                       array('http://foo.com/', 'http://foo.com/'),
-                       array('http://foo.com/path', 'http://foo.com/path'),
-                       array('http://foo.com/path?query', 'http://foo.com/path?query'),
-                       array('http://foo.com/path?query=v', 'http://foo.com/path?query=v'),
-                       array('http://foo.com/?query=v', 'http://foo.com/?query=v'),
-                       );
-
-        foreach ($cases as $pair) {
-            list($orig, $after) = $pair;
-            list($base, $frag) = Auth_OpenID::urldefrag($orig);
-            $this->assertEquals($after, $base);
-            $this->assertEquals($frag, '');
-
-            list($base, $frag) = Auth_OpenID::urldefrag($orig . "#fragment");
-            $this->assertEquals($after, $base);
-            $this->assertEquals('fragment', $frag);
-        }
+    function urldefrag_data() {
+        return array(
+            array('http://foo.com', 'http://foo.com'),
+            array('http://foo.com/', 'http://foo.com/'),
+            array('http://foo.com/path', 'http://foo.com/path'),
+            array('http://foo.com/path?query', 'http://foo.com/path?query'),
+            array('http://foo.com/path?query=v', 'http://foo.com/path?query=v'),
+            array('http://foo.com/?query=v', 'http://foo.com/?query=v'),
+        );
     }
 
+    /**
+     * @dataProvider urldefrag_data
+     */
+    function test_urldefrag($orig, $after) {
+        list($base, $frag) = Auth_OpenID::urldefrag($orig);
+        $this->assertEquals($after, $base);
+        $this->assertEquals('', $frag);
+
+        list($base, $frag) = Auth_OpenID::urldefrag($orig . "#fragment");
+        $this->assertEquals($after, $base);
+        $this->assertEquals('fragment', $frag);
+    }
+
+    function normalizeUrl_data() {
+        return array(
+            array("http://foo.com/", "foo.com"),
+            array("http://foo.com/", "http://foo.com"),
+            array("https://foo.com/", "https://foo.com"),
+            array("http://foo.com/bar", "foo.com/bar"),
+            array("http://foo.com/bar", "http://foo.com/bar"),
+            array("http://foo.com/", "http://foo.com/"),
+            array("https://foo.com/", "https://foo.com/"),
+            array("https://foo.com/bar", "https://foo.com/bar"),
+            array("http://foo.com/bar", "HTtp://foo.com/bar"),
+            array("http://foo.com/bar", "HTtp://foo.com/bar#fraggle"),
+            array("http://foo.com/bAr/", "HTtp://fOo.com/bAr/.#fraggle"),
+            // array("http://foo.com/%E8%8D%89", "foo.com/\u8349"),
+            // array("http://foo.com/%E8%8D%89", "http://foo.com/\u8349"),
+        );
+    }
+
+    /**
+     * @dataProvider normalizeUrl_data
+     */
+    function test_normalizeUrl($normalized, $raw) {
+        $this->assertEquals($normalized, Auth_OpenID::normalizeUrl($raw));
+    }
+
+    /*
     function test_normalizeUrl()
-    {
-        $this->assertEquals("http://foo.com/",
-                            Auth_OpenID::normalizeUrl("foo.com"));
-
-        $this->assertEquals("http://foo.com/",
-                            Auth_OpenID::normalizeUrl("http://foo.com"));
-
-        $this->assertEquals("https://foo.com/",
-                            Auth_OpenID::normalizeUrl("https://foo.com"));
-
-        $this->assertEquals("http://foo.com/bar",
-                            Auth_OpenID::normalizeUrl("foo.com/bar"));
-
-        $this->assertEquals("http://foo.com/bar",
-                            Auth_OpenID::normalizeUrl("http://foo.com/bar"));
-
-        $this->assertEquals("http://foo.com/",
-                            Auth_OpenID::normalizeUrl("http://foo.com/"));
-
-        $this->assertEquals("https://foo.com/",
-                            Auth_OpenID::normalizeUrl("https://foo.com/"));
-
-        $this->assertEquals("https://foo.com/bar" ,
-                            Auth_OpenID::normalizeUrl("https://foo.com/bar"));
-
-        $this->assertEquals("http://foo.com/bar" ,
-                            Auth_OpenID::normalizeUrl("HTtp://foo.com/bar"));
-
-        $this->assertEquals("http://foo.com/bar" ,
-             Auth_OpenID::normalizeUrl("HTtp://foo.com/bar#fraggle"));
-
-        $this->assertEquals("http://foo.com/bAr/" ,
-             Auth_OpenID::normalizeUrl("HTtp://fOo.com/bAr/.#fraggle"));
-
-        if (0) {
-            $this->assertEquals("http://foo.com/%E8%8D%89",
-                           Auth_OpenID::normalizeUrl("foo.com/\u8349"));
-
-            $this->assertEquals("http://foo.com/%E8%8D%89",
-                           Auth_OpenID::normalizeUrl("http://foo.com/\u8349"));
-        }
-
         $non_ascii_domain_cases = array(
                                         array("http://xn--vl1a.com/",
                                               "\u8349.com"),
@@ -159,161 +146,148 @@ class Tests_Auth_OpenID_Util extends PHPUnit_Framework_TestCase {
                                               "http://\u8349.com/\u8349"),
                                         );
 
-        // XXX
-        /*
-        codecs.getencoder('idna')
-         except LookupError:
-        # If there is no idna codec, these cases with
-        # non-ascii-representable domain names should fail.
-        should_raise = True
-    else:
-        should_raise = False
-
-    for expected, case in non_ascii_domain_cases:
-try:
-actual = Auth_OpenID::normalizeUrl(case)
-         except UnicodeError:
-            assert should_raise
-    else:
-assert not should_raise and actual == expected, case
-        */
 
         $this->assertNull(Auth_OpenID::normalizeUrl(null));
         $this->assertNull(Auth_OpenID::normalizeUrl(''));
         $this->assertNull(Auth_OpenID::normalizeUrl('http://'));
     }
+     */
 
-    function test_appendArgs()
+    function appendArgs_data()
     {
 
         $simple = 'http://www.example.com/';
 
-        $cases = array(
-                       array('empty list',
-                             array($simple, array()),
-                             $simple),
+        return array(
+           array('empty list',
+                 array($simple, array()),
+                 $simple),
 
-                       array('empty dict',
-                             array($simple, array()),
-                             $simple),
+           array('empty dict',
+                 array($simple, array()),
+                 $simple),
 
-                       array('one list',
-                             array($simple, array(array('a', 'b'))),
-                             $simple . '?a=b'),
+           array('one list',
+                 array($simple, array(array('a', 'b'))),
+                 $simple . '?a=b'),
 
-                       array('one dict',
-                             array($simple, array('a' => 'b')),
-                             $simple . '?a=b'),
+           array('one dict',
+                 array($simple, array('a' => 'b')),
+                 $simple . '?a=b'),
 
-                       array('two list (same)',
-                             array($simple, array(array('a', 'b'),
-                                                  array('a', 'c'))),
-                             $simple . '?a=b&a=c'),
+           array('two list (same)',
+                 array($simple, array(array('a', 'b'),
+                                      array('a', 'c'))),
+                 $simple . '?a=b&a=c'),
 
-                       array('two list',
-                             array($simple, array(array('a', 'b'),
-                                                  array('b', 'c'))),
-                             $simple . '?a=b&b=c'),
+           array('two list',
+                 array($simple, array(array('a', 'b'),
+                                      array('b', 'c'))),
+                 $simple . '?a=b&b=c'),
 
-                       array('two list (order)',
-                             array($simple, array(array('b', 'c'),
-                                                  array('a', 'b'))),
-                             $simple . '?b=c&a=b'),
+           array('two list (order)',
+                 array($simple, array(array('b', 'c'),
+                                      array('a', 'b'))),
+                 $simple . '?b=c&a=b'),
 
-                       array('two dict (order)',
-                             array($simple, array('b' => 'c',
-                                                  'a' => 'b')),
-                             $simple . '?a=b&b=c'),
+           array('two dict (order)',
+                 array($simple, array('b' => 'c',
+                                      'a' => 'b')),
+                 $simple . '?a=b&b=c'),
 
-                       array('escape',
-                             array($simple, array(array('=', '='))),
-                             $simple . '?%3D=%3D'),
+           array('escape',
+                 array($simple, array(array('=', '='))),
+                 $simple . '?%3D=%3D'),
 
-                       array('escape (URL)',
-                             array($simple, array(array('this_url',
-                                                        $simple))),
-                             $simple .
-                             '?this_url=http%3A%2F%2Fwww.example.com%2F'),
+           array('escape (URL)',
+                 array($simple, array(array('this_url',
+                                            $simple))),
+                 $simple .
+                 '?this_url=http%3A%2F%2Fwww.example.com%2F'),
 
-                       array('use dots',
-                             array($simple, array(array('openid.stuff',
-                                                        'bother'))),
-                             $simple . '?openid.stuff=bother'),
+           array('use dots',
+                 array($simple, array(array('openid.stuff',
+                                            'bother'))),
+                 $simple . '?openid.stuff=bother'),
 
-                       array('args exist (empty)',
-                             array($simple . '?stuff=bother', array()),
-                             $simple . '?stuff=bother'),
+           array('args exist (empty)',
+                 array($simple . '?stuff=bother', array()),
+                 $simple . '?stuff=bother'),
 
-                       array('args exist',
-                             array($simple . '?stuff=bother',
-                                   array(array('ack', 'ack'))),
-                             $simple . '?stuff=bother&ack=ack'),
+           array('args exist',
+                 array($simple . '?stuff=bother',
+                       array(array('ack', 'ack'))),
+                 $simple . '?stuff=bother&ack=ack'),
 
-                       array('args exist',
-                             array($simple . '?stuff=bother',
-                                   array(array('ack', 'ack'))),
-                             $simple . '?stuff=bother&ack=ack'),
+           array('args exist',
+                 array($simple . '?stuff=bother',
+                       array(array('ack', 'ack'))),
+                 $simple . '?stuff=bother&ack=ack'),
 
-                       array('args exist (dict)',
-                             array($simple . '?stuff=bother',
-                                   array('ack' => 'ack')),
-                             $simple . '?stuff=bother&ack=ack'),
+           array('args exist (dict)',
+                 array($simple . '?stuff=bother',
+                       array('ack' => 'ack')),
+                 $simple . '?stuff=bother&ack=ack'),
 
-                       array('args exist (dict 2)',
-                             array($simple . '?stuff=bother',
-                                   array('ack' => 'ack', 'zebra' => 'lion')),
-                             $simple . '?stuff=bother&ack=ack&zebra=lion'),
+           array('args exist (dict 2)',
+                 array($simple . '?stuff=bother',
+                       array('ack' => 'ack', 'zebra' => 'lion')),
+                 $simple . '?stuff=bother&ack=ack&zebra=lion'),
 
-                       array('three args (dict)',
-                             array($simple, array('stuff' => 'bother',
-                                                  'ack' => 'ack',
-                                                  'zebra' => 'lion')),
-                             $simple . '?ack=ack&stuff=bother&zebra=lion'),
+           array('three args (dict)',
+                 array($simple, array('stuff' => 'bother',
+                                      'ack' => 'ack',
+                                      'zebra' => 'lion')),
+                 $simple . '?ack=ack&stuff=bother&zebra=lion'),
 
-                       array('three args (list)',
-                             array($simple, array(
-                                                  array('stuff', 'bother'),
-                                                  array('ack', 'ack'),
-                                                  array('zebra', 'lion'))),
-                             $simple . '?stuff=bother&ack=ack&zebra=lion'),
-                       );
-
-        // Tests.
-        foreach ($cases as $case) {
-            list($desc, $data, $expected) = $case;
-            list($url, $query) = $data;
-            $this->assertEquals($expected,
-                    Auth_OpenID::appendArgs($url, $query));
-        }
+           array('three args (list)',
+                 array($simple, array(
+                                      array('stuff', 'bother'),
+                                      array('ack', 'ack'),
+                                      array('zebra', 'lion'))),
+                 $simple . '?stuff=bother&ack=ack&zebra=lion'),
+           );
     }
 
-    function test_getQuery()
+    /**
+     * @dataProvider appendArgs_data
+     */
+    function test_appendArgs($desc, $data, $expected)
     {
-        $queries = array(
-                         '' => array(),
-                         'single' => array(),
-                         'no&pairs' => array(),
-                         'x%3Dy' => array(),
-                         'single&real=value' => array('real' => 'value'),
-                         'x=y&m=x%3Dn' => array('x' => 'y', 'm' => 'x=n'),
-                         '&m=x%20y' => array('m' => 'x y'),
-                         'single&&m=x%20y&bogus' => array('m' => 'x y'),
-                         // Even with invalid encoding.  But don't do that.
-                         'too=many=equals&' => array('too' => 'many=equals')
-                         );
+        list($url, $query) = $data;
+        $actual = Auth_OpenID::appendArgs($url, $query);
+        $this->assertEquals($expected, $actual);
+    }
 
-        foreach ($queries as $s => $data) {
-            $query = Auth_OpenID::getQuery($s);
+    function query_data() {
+        return array(
+            array('', array()),
+            array('single', array()),
+            array('no&pairs', array()),
+            array('x%3Dy', array()),
+            array('single&real=value', array('real' => 'value')),
+            array('x=y&m=x%3Dn', array('x' => 'y', 'm' => 'x=n')),
+            array('&m=x%20y', array('m' => 'x y')),
+            array('single&&m=x%20y&bogus', array('m' => 'x y')),
+            // Even with invalid encoding.  But don't do that.
+            array('too=many=equals&', array('too' => 'many=equals'))
+        );
+    }
 
-            foreach ($data as $key => $value) {
-                $this->assertTrue($query[$key] === $value);
-            }
+    /**
+     * @dataProvider query_data
+     */
+    function test_getQuery($query_string, $data)
+    {
+        $query = Auth_OpenID::getQuery($query_string);
 
-            foreach ($query as $key => $value) {
-                $this->assertTrue($data[$key] === $value);
-            }
+        foreach ($data as $key => $value) {
+            $this->assertTrue($query[$key] === $value);
+        }
+
+        foreach ($query as $key => $value) {
+            $this->assertTrue($data[$key] === $value);
         }
     }
+
 }
-
-

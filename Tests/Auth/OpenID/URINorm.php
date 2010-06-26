@@ -17,50 +17,22 @@
 require_once 'Auth/OpenID/URINorm.php';
 require_once 'Tests/Auth/OpenID/TestUtil.php';
 
-class Tests_Auth_OpenID_URINorm_TestCase extends PHPUnit_Framework_TestCase {
-    function Tests_Auth_OpenID_URINorm_TestCase(
-                               $name, $uri, $expected)
-    {
+class Tests_Auth_OpenID_URINorm extends PHPUnit_Framework_TestCase {
 
-        $this->setName($name);
-        $this->uri = $uri;
-        $this->expected = $expected;
+    function normalization_data()
+    {
+        $config = parse_ini_file('Tests/Auth/OpenID/data/uri-normalization.cfg', true);
+        return $config;
     }
 
-    function runTest()
+    /**
+     * @dataProvider normalization_data
+     */
+    function test_normalization($name, $uri, $expected)
     {
-        $actual = Auth_OpenID_urinorm($this->uri);
-        $this->assertEquals($this->expected, $actual);
-    }
-}
-
-class Tests_Auth_OpenID_URINorm extends PHPUnit_Framework_TestSuite {
-    function _readTestCases()
-    {
-        $lines = Tests_Auth_OpenID_readlines('urinorm.txt');
-        $cases = array();
-        $case = array();
-        for ($i = 0; $i < count($lines) && ($i + 3 <= count($lines)); $i += 4) {
-            $name = trim($lines[$i]);
-            $uri = trim($lines[$i + 1]);
-            $expected = trim($lines[$i + 2]);
-            if ($expected == 'fail') {
-                $expected = null;
-            }
-            $cases[] = array($name, $uri, $expected);
-        }
-
-        return $cases;
+        $actual = Auth_OpenID_urinorm($uri);
+        $this->assertEquals($expected, $actual);
     }
 
-    function Tests_Auth_OpenID_URINorm($name)
-    {
-        $this->setName($name);
-        $cases = $this->_readTestCases();
-        foreach ($cases as $case) {
-            list($name, $uri, $expected) = $case;
-            $this->addTest(new Tests_Auth_OpenID_URINorm_TestCase($name, $uri, $expected));
-        }
-    }
 }
 

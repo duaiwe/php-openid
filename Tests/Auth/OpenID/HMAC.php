@@ -15,28 +15,22 @@
  */
 
 require_once 'Auth/OpenID/HMAC.php';
+require_once 'Tests/Auth/OpenID/TestSuite.php';
 require_once 'Tests/Auth/OpenID/TestUtil.php';
 
-class Tests_Auth_OpenID_HMAC_TestCase extends PHPUnit_Framework_TestCase {
-    function Tests_Auth_OpenID_HMAC_TestCase(
-        $name, $key, $data, $expected, $hmac_func)
-    {
+class Auth_OpenID_HMACSuite extends Auth_OpenID_TestSuite {
+    public static function suite() {
+        $suite = new Auth_OpenID_NonceSuite();
 
-        $this->setName($name);
-        $this->key = $key;
-        $this->data = $data;
-        $this->expected = $expected;
-        $this->hmac_func = $hmac_func;
-    }
+        $suite->addTestSuite('Auth_OpenID_HMAC_SHA1Test');
+        $suite->addTestSuite('Auth_OpenID_HMAC_SHA256Test');
 
-    function runTest()
-    {
-        $actual = call_user_func($this->hmac_func, $this->key, $this->data);
-        $this->assertEquals(bin2hex($this->expected), bin2hex($actual));
+        return $suite;
     }
 }
 
-class Tests_Auth_OpenID_HMAC extends PHPUnit_Framework_TestSuite {
+abstract class Auth_OpenID_HMAC_TestCase extends PHPUnit_Framework_TestCase {
+
     function _strConvert($s)
     {
         $repeat_pat = '/^0x([a-f0-9]{2}) repeated (\d+) times$/';
@@ -52,114 +46,72 @@ class Tests_Auth_OpenID_HMAC extends PHPUnit_Framework_TestSuite {
         } elseif (preg_match('/^"(.*)"$/', $s, $match)) {
             $data = $match[1];
         } else {
-            trigger_error("Bad data format: $s", E_USER_ERROR);
+            $data = $s;
         }
         return $data;
     }
 
-    function _readTestCases($test_file_name, $digest_len)
-    {
-        $lines = Tests_Auth_OpenID_readlines($test_file_name);
-        $cases = array();
-        $case = array();
-        foreach ($lines as $line) {
-            if ($line{0} == "#") {
-                continue;
-            }
-
-            // Blank line separates test cases
-            if ($line == "\n") {
-                $cases[] = $case;
-                $case = array();
-            } else {
-                $match = array();
-                $pat = '/^([a-z0-9_-]+) =\s+(.*?)\n$/';
-                if (!preg_match($pat, $line, $match)) {
-                    trigger_error("Bad test input: $line", E_USER_ERROR);
-                }
-
-                $c = count($match);
-                if ($c != 3) {
-                    trigger_error(
-                        "Wrong number of elements in parsed case: $c",
-                        E_USER_ERROR);
-                    return false;
-                }
-
-                $key = $match[1];
-                $value = $match[2];
-                $case[$key] = $value;
-            }
-        }
-
-        if (count($case)) {
-            $cases[] = $case;
-        }
-
-        $final = array();
-
-        // Normalize strings and check data integrity
-        foreach ($cases as $case) {
+    function clean_config($raw, $digest_len) {
+        $data = array();
+        foreach ($raw as $k => $v) {
             $clean = array();
-            $clean["key"] =
-                Tests_Auth_OpenID_HMAC::_strConvert($case["key"]);
-            if (defined(@$case["key_len"])) {
-                if (Auth_OpenID::bytes($clean["key"]) != $case["key_len"]) {
-                    trigger_error("Bad key length", E_USER_ERROR);
+
+            $clean['key'] = $this->_strConvert($v['key']);
+            if (array_key_exists('key_len', $v)) {
+                if (Auth_OpenID::bytes($clean['key']) != $v['key_len']) {
+                    trigger_error('Bad key length', E_USER_ERROR);
                 }
             }
 
-            $clean["data"] =
-                Tests_Auth_OpenID_HMAC::_strConvert($case["data"]);
-            if (defined(@$case["data_len"])) {
-                if (Auth_OpenID::bytes($clean["data"]) != $case["data_len"]) {
-                    trigger_error("Bad data length", E_USER_ERROR);
+            $clean['data'] = $this->_strConvert($v['data']);
+            if (array_key_exists('data_len', $v)) {
+                if (Auth_OpenID::bytes($clean['data']) != $v['data_len']) {
+                    trigger_error('Bad data length', E_USER_ERROR);
                 }
             }
 
-            $clean["digest"] =
-                Tests_Auth_OpenID_HMAC::_strConvert($case["digest"]);
-            if (Auth_OpenID::bytes($clean["digest"]) != $digest_len) {
-                $l = Auth_OpenID::bytes($clean["digest"]);
+            $clean['digest'] = $this->_strConvert($v['digest']);
+            if (Auth_OpenID::bytes($clean['digest']) != $digest_len) {
+                $l = Auth_OpenID::bytes($clean['digest']);
                 trigger_error("Bad digest length: $l", E_USER_ERROR);
             }
 
-            $clean['test_case'] = $case['test_case'];
-
-            $final[] = $clean;
+            $data[] = $clean;
         }
-        return $final;
-    }
 
-    function Tests_Auth_OpenID_HMAC($name)
-    {
-        $this->setName($name);
-        $hash_test_defs = array(array(
-            'Auth_OpenID_HMACSHA1', 'hmac-sha1.txt', 20));
-        if (Auth_OpenID_HMACSHA256_SUPPORTED) {
-            $hash_test_defs[] =
-                array('Auth_OpenID_HMACSHA256', 'hmac-sha256.txt', 32);
-        }
-        foreach ($hash_test_defs as $params) {
-            list($hash_func, $filename, $hash_len) = $params;
-            $cases = $this->_readTestCases($filename, $hash_len);
-            foreach ($cases as $case) {
-                $test = new Tests_Auth_OpenID_HMAC_TestCase(
-                    $case['test_case'],
-                    $case['key'],
-                    $case['data'],
-                    $case['digest'],
-                    $hash_func);
-
-                $digest = $case['digest'];
-                $this->_addTestByValue($test);
-            }
-        }
-    }
-
-    function _addTestByValue($test) {
-        $this->addTest($test);
+        return $data;
     }
 }
 
+class Auth_OpenID_HMAC_SHA1Test extends Auth_OpenID_HMAC_TestCase {
+    function hmac_data() {
+        $config = parse_ini_file('Tests/Auth/OpenID/data/hmac-sha1.cfg', true);
+        $config = $this->clean_config($config, 20);
+        return $config;
+    }
+
+    /**
+     * @dataProvider hmac_data
+     */
+    function test_hmac($key, $data, $expected) {
+        $actual = Auth_OpenID_HMACSHA1($key, $data);
+        $this->assertEquals(bin2hex($expected), bin2hex($actual));
+    }
+}
+
+class Auth_OpenID_HMAC_SHA256Test extends Auth_OpenID_HMAC_TestCase {
+    function hmac_data() {
+        $config = parse_ini_file('Tests/Auth/OpenID/data/hmac-sha256.cfg', true);
+        $config = $this->clean_config($config, 32);
+        return $config;
+    }
+
+    /**
+     * @dataProvider hmac_data
+     */
+    function test_hmac($key, $data, $expected) {
+        $actual = Auth_OpenID_HMACSHA256($key, $data);
+        $this->assertEquals(bin2hex($expected), bin2hex($actual));
+    }
+}
 
