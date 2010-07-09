@@ -21,7 +21,7 @@ class Tests_Auth_OpenID_URINorm extends PHPUnit_Framework_TestCase {
 
     function normalization_data()
     {
-        $config = parse_ini_file('Tests/Auth/OpenID/data/uri-normalization.cfg', true);
+        $config = parse_ini_file('Tests/Auth/OpenID/data/uri-normalization.ini', true);
         return $config;
     }
 

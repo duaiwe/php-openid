@@ -2,6 +2,7 @@
 
 require_once 'Tests/Auth/OpenID/AX.php';
 require_once 'Tests/Auth/OpenID/Association.php';
+require_once 'Tests/Auth/OpenID/AssociationResponse.php';
 require_once 'Tests/Auth/OpenID/CryptUtil.php';
 require_once 'Tests/Auth/OpenID/DiffieHellman.php';
 require_once 'Tests/Auth/OpenID/Extension.php';
@@ -20,6 +21,7 @@ class Auth_OpenID_AllTests {
 
         $suite->addTestSuite('Auth_OpenID_AXSuite');
         $suite->addTestSuite('Tests_Auth_OpenID_Association');
+        $suite->addTestSuite('Auth_OpenID_AssociationResponseSuite');
         $suite->addTestSuite('Tests_Auth_OpenID_CryptUtil');
         $suite->addTestSuite('Auth_OpenID_DiffieHellmanTest');
         $suite->addTestSuite('Tests_Auth_OpenID_Extension');

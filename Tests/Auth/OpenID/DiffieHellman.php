@@ -26,7 +26,7 @@ class Auth_OpenID_DiffieHellmanTest extends PHPUnit_Framework_TestCase {
     }
 
     function private_data() {
-        $config = parse_ini_file('Tests/Auth/OpenID/data/dh-private.cfg', true);
+        $config = parse_ini_file('Tests/Auth/OpenID/data/dh-private.ini', true);
         return $config;
     }
 
@@ -41,7 +41,7 @@ class Auth_OpenID_DiffieHellmanTest extends PHPUnit_Framework_TestCase {
 
 
     function exch_data() {
-        $config = parse_ini_file('Tests/Auth/OpenID/data/dh-exch.cfg', true);
+        $config = parse_ini_file('Tests/Auth/OpenID/data/dh-exch.ini', true);
         return $config;
     }
 

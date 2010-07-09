@@ -85,7 +85,7 @@ abstract class Auth_OpenID_HMAC_TestCase extends PHPUnit_Framework_TestCase {
 
 class Auth_OpenID_HMAC_SHA1Test extends Auth_OpenID_HMAC_TestCase {
     function hmac_data() {
-        $config = parse_ini_file('Tests/Auth/OpenID/data/hmac-sha1.cfg', true);
+        $config = parse_ini_file('Tests/Auth/OpenID/data/hmac-sha1.ini', true);
         $config = $this->clean_config($config, 20);
         return $config;
     }
@@ -101,7 +101,7 @@ class Auth_OpenID_HMAC_SHA1Test extends Auth_OpenID_HMAC_TestCase {
 
 class Auth_OpenID_HMAC_SHA256Test extends Auth_OpenID_HMAC_TestCase {
     function hmac_data() {
-        $config = parse_ini_file('Tests/Auth/OpenID/data/hmac-sha256.cfg', true);
+        $config = parse_ini_file('Tests/Auth/OpenID/data/hmac-sha256.ini', true);
         $config = $this->clean_config($config, 32);
         return $config;
     }

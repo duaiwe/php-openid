@@ -2,43 +2,35 @@
 
 require_once "Tests/Auth/OpenID/TestUtil.php";
 require_once "Tests/Auth/OpenID/MemStore.php";
+require_once "Tests/Auth/OpenID/TestSuite.php";
 
 require_once "Auth/OpenID/Message.php";
 require_once "Auth/OpenID/Server.php";
 require_once "Auth/OpenID/Consumer.php";
 require_once "Auth/OpenID/Association.php";
 
-// Some values we can use for convenience (see mkAssocResponse)
-global $association_response_values;
-$association_response_values = array(
-    'expires_in' => '1000',
-    'assoc_handle' => 'a handle',
-    'assoc_type' => 'a type',
-    'session_type' => 'a session type',
-    'ns' => Auth_OpenID_OPENID2_NS
-    );
+class Auth_OpenID_AssociationResponseSuite extends Auth_OpenID_TestSuite {
+    public static function suite() {
+        $suite = new Auth_OpenID_AssociationResponseSuite();
 
-/**
- * Build an association response message that contains the specified
- * subset of keys. The values come from association_response_values.
- *
- * This is useful for testing for missing keys and other times that we
- * don't care what the values are.
- */
-function mkAssocResponse($keys)
-{
-    global $association_response_values;
+        $suite->addTestSuite('Auth_OpenID_AssociationResponseTest');
+        $suite->addTestSuite('Auth_OpenID_InvalidAssociationFieldsTest');
+        $suite->addTestSuite('Auth_OpenID_ExtractAssociationDiffieHellmanTest');
 
-    $args = array();
-
-    foreach ($keys as $key) {
-        $args[$key] = $association_response_values[$key];
+        return $suite;
     }
-
-    return Auth_OpenID_Message::fromOpenIDArgs($args);
 }
 
-class Tests_Auth_OpenID_AssociationResponse extends PHPUnit_Framework_TestCase {
+abstract class Auth_OpenID_AssociationResponseTestCase extends PHPUnit_Framework_TestCase {
+
+    static protected $association_response_values = array(
+        'expires_in' => '1000',
+        'assoc_handle' => 'a handle',
+        'assoc_type' => 'a type',
+        'session_type' => 'a session type',
+        'ns' => Auth_OpenID_OPENID2_NS
+    );
+
     function setUp()
     {
         $this->store = new Tests_Auth_OpenID_MemStore();
@@ -46,48 +38,26 @@ class Tests_Auth_OpenID_AssociationResponse extends PHPUnit_Framework_TestCase {
         $this->endpoint = new Auth_OpenID_ServiceEndpoint();
     }
 
-    function failUnlessProtocolError($thing)
+    /**
+     * Build an association response message that contains the specified
+     * subset of keys. The values come from association_response_values.
+     *
+     * This is useful for testing for missing keys and other times that we
+     * don't care what the values are.
+     */
+    static function mkAssocResponse($keys)
     {
-        $this->assertTrue(Auth_OpenID::isFailure($thing));
+        $args = array();
+
+        foreach ($keys as $key) {
+            $args[$key] = self::$association_response_values[$key];
+        }
+
+        return Auth_OpenID_Message::fromOpenIDArgs($args);
     }
 
-    function _run($keys)
-    {
-        $msg = mkAssocResponse($keys);
-        $dumb = null;
-        $this->assertTrue(Auth_OpenID::isFailure($this->consumer->_extractAssociation($msg, $dumb)));
-    }
-}
-
-/**
- * Test for returning an error upon missing fields in association
- * responses for OpenID 2
- */
-class TestExtractAssociationMissingFieldsOpenID2 extends Tests_Auth_OpenID_AssociationResponse {
-
-    function test_noFields_openid2()
-    {
-        $this->_run(array('ns'));
-    }
-
-    function test_missingExpires_openid2()
-    {
-        $this->_run(array('assoc_handle', 'assoc_type', 'session_type', 'ns'));
-    }
-
-    function test_missingHandle_openid2()
-    {
-        $this->_run(array('expires_in', 'assoc_type', 'session_type', 'ns'));
-    }
-
-    function test_missingAssocType_openid2()
-    {
-        $this->_run(array('expires_in', 'assoc_handle', 'session_type', 'ns'));
-    }
-
-    function test_missingSessionType_openid2()
-    {
-        $this->_run(array('expires_in', 'assoc_handle', 'assoc_type', 'ns'));
+    function assertOpenIDFailure($response) {
+        $this->assertTrue( Auth_OpenID::isFailure($response) );
     }
 }
 
@@ -95,94 +65,87 @@ class TestExtractAssociationMissingFieldsOpenID2 extends Tests_Auth_OpenID_Assoc
  * Test for returning an error upon missing fields in association
  * responses for OpenID 2
  */
-class TestExtractAssociationMissingFieldsOpenID1 extends Tests_Auth_OpenID_AssociationResponse {
-    function test_noFields_openid1()
-    {
-        $this->_run(array());
+class Auth_OpenID_AssociationResponseTest extends Auth_OpenID_AssociationResponseTestCase {
+
+    function missingFields_dataProvider() {
+        return array(
+            // OpenID 2 messages
+            array( array('ns') ),
+            array( array('assoc_handle', 'assoc_type', 'session_type', 'ns') ),
+            array( array('expires_in', 'assoc_type', 'session_type', 'ns') ),
+            array( array('expires_in', 'assoc_handle', 'session_type', 'ns') ),
+            array( array('expires_in', 'assoc_handle', 'assoc_type', 'ns') ),
+
+            // OpenID 1 messages
+            array( array() ),
+            array( array('assoc_handle', 'assoc_type') ),
+            array( array('expires_in', 'assoc_type') ),
+            array( array('expires_in', 'assoc_handle') ),
+        );
     }
 
-    function test_missingExpires_openid1()
+    /**
+     * @dataProvider missingFields_dataProvider
+     */
+    function test_missingFields($keys)
     {
-        $this->_run(array('assoc_handle', 'assoc_type'));
+        $msg = self::mkAssocResponse( array('ns') );
+        $association = $this->consumer->_extractAssociation($msg, null);
+        $this->assertOpenIDFailure($association);
     }
 
-    function test_missingHandle_openid1()
-    {
-        $this->_run(array('expires_in', 'assoc_type'));
+    function mismatch_dataProvider() {
+        return array(
+            array('no-encryption', ''),
+            array('DH-SHA1', 'no-encryption'),
+            array('DH-SHA256', 'no-encryption'),
+            array('no-encryption', 'DH-SHA1'),
+            array('DH-SHA1', 'DH-SHA256', true),
+            array('DH-SHA256', 'DH-SHA1', true),
+            array('no-encryption', 'DH-SHA1', true),
+        );
     }
 
-    function test_missingAssocType_openid1()
-    {
-        $this->_run(array('expires_in', 'assoc_handle'));
-    }
-}
 
-class DummyAssocationSession {
-    function DummyAssocationSession($session_type, $allowed_assoc_types=array())
+    /**
+     * @dataProvider mismatch_dataProvider
+     */
+    function test_sessionTypeMismatch($requested_session_type, $response_session_type, $openid1=false)
     {
-        $this->session_type = $session_type;
-        $this->allowed_assoc_types = $allowed_assoc_types;
-    }
-}
-
-class ExtractAssociationSessionTypeMismatch extends Tests_Auth_OpenID_AssociationResponse {
-    function _runTest($requested_session_type, $response_session_type, $openid1=false)
-    {
-        global $association_response_values;
-
-        $assoc_session = new DummyAssocationSession($requested_session_type);
-        $keys = array_keys($association_response_values);
+        $assoc_session = (object) array('session_type' => $requested_session_type, 'allowed_assoc_types' => array());
+        $keys = array_keys(parent::$association_response_values);
         if ($openid1) {
             if (in_array('ns', $keys)) {
                 unset($keys[array_search('ns', $keys)]);
             }
         }
 
-        $msg = mkAssocResponse($keys);
+        $msg = self::mkAssocResponse($keys);
         $msg->setArg(Auth_OpenID_OPENID_NS, 'session_type',
                      $response_session_type);
         $this->assertTrue(
            $this->consumer->_extractAssociation($msg, $assoc_session) === null);
     }
 
-    function test_typeMismatchNoEncBlank_openid2()
-    {
-        $this->_runTest('no-encryption', '');
+    function responseSessionType_dataProvider() {
+        return array(
+            array('no-encryption', null),
+            array('no-encryption', ''),
+            array('no-encryption', 'no-encryption'),
+            array('DH-SHA1', 'DH-SHA1'),
+
+            // DH-SHA256 is not a valid session type for OpenID1, but this
+            // function does not test that. This is mostly just to make sure
+            // that it will pass-through stuff that is not explicitly handled,
+            // so it will get handled the same way as it is handled for OpenID 2
+            array('DH-SHA256', 'DH-SHA256'),
+        );
     }
 
-    function test_typeMismatchDHSHA1NoEnc_openid2()
-    {
-        $this->_runTest('DH-SHA1', 'no-encryption');
-    }
-
-    function test_typeMismatchDHSHA256NoEnc_openid2()
-    {
-        $this->_runTest('DH-SHA256', 'no-encryption');
-    }
-
-    function test_typeMismatchNoEncDHSHA1_openid2()
-    {
-        $this->_runTest('no-encryption', 'DH-SHA1');
-    }
-
-    function test_typeMismatchDHSHA1NoEnc_openid1()
-    {
-        $this->_runTest('DH-SHA1', 'DH-SHA256', true);
-    }
-
-    function test_typeMismatchDHSHA256NoEnc_openid1()
-    {
-        $this->_runTest('DH-SHA256', 'DH-SHA1', true);
-    }
-
-    function test_typeMismatchNoEncDHSHA1_openid1()
-    {
-        $this->_runTest('no-encryption', 'DH-SHA1', true);
-    }
-}
-
-class TestOpenID1AssociationResponseSessionType extends Tests_Auth_OpenID_AssociationResponse {
-    function _runTest($expected_session_type, $session_type_value)
+    /**
+     * @dataProvider responseSessionType_dataProvider
+     */
+    function test_responseSessionType($expected_session_type, $session_type_value)
     {
         // Create a Message with just 'session_type' in it, since
         // that's all this function will use. 'session_type' may be
@@ -205,35 +168,6 @@ class TestOpenID1AssociationResponseSessionType extends Tests_Auth_OpenID_Associ
                             $error_message);
     }
 
-    function test_none()
-    {
-        $this->_runTest('no-encryption', null);
-    }
-
-    function test_empty()
-    {
-        $this->_runTest('no-encryption', '');
-    }
-
-    function test_explicitNoEncryption()
-    {
-        $this->_runTest('no-encryption', 'no-encryption');
-    }
-
-    function test_dhSHA1()
-    {
-        $this->_runTest('DH-SHA1', 'DH-SHA1');
-    }
-
-    // DH-SHA256 is not a valid session type for OpenID1, but this
-    // function does not test that. This is mostly just to make sure
-    // that it will pass-through stuff that is not explicitly handled,
-    // so it will get handled the same way as it is handled for OpenID
-    // 2
-    function test_dhSHA256()
-    {
-        $this->_runTest('DH-SHA256', 'DH-SHA256');
-    }
 }
 
 class DummyAssociationSession {
@@ -249,7 +183,7 @@ class DummyAssociationSession {
     }
 }
 
-class TestInvalidFields extends Tests_Auth_OpenID_AssociationResponse {
+class Auth_OpenID_InvalidAssociationFieldsTest extends Auth_OpenID_AssociationResponseTestCase {
     function setUp()
     {
         parent::setUp();
@@ -308,7 +242,7 @@ class TestInvalidFields extends Tests_Auth_OpenID_AssociationResponse {
     }
 }
 
-class TestExtractAssociationDiffieHellman extends Tests_Auth_OpenID_AssociationResponse {
+class Auth_OpenID_ExtractAssociationDiffieHellmanTest extends Auth_OpenID_AssociationResponseTestCase {
     var $secret = 'xxxxxxxxxxxxxxxxxxxx';
 
     function _setUpDH()
@@ -360,18 +294,5 @@ class TestExtractAssociationDiffieHellman extends Tests_Auth_OpenID_AssociationR
         $this->assertTrue($this->consumer->_extractAssociation($server_resp, $sess) === null);
     }
     */
-}
-
-global $Tests_Auth_OpenID_AssociationResponse_other;
-$Tests_Auth_OpenID_AssociationResponse_other = array(
-                                                     new TestInvalidFields(),
-                                                     new TestOpenID1AssociationResponseSessionType(),
-                                                     new ExtractAssociationSessionTypeMismatch(),
-                                                     new TestExtractAssociationMissingFieldsOpenID1(),
-                                                     new TestExtractAssociationMissingFieldsOpenID2()
-                                                     );
-
-if (!defined('Auth_OpenID_NO_MATH_SUPPORT')) {
-    $Tests_Auth_OpenID_AssociationResponse_other[] = new TestExtractAssociationDiffieHellman();
 }
 
