@@ -1,47 +1,33 @@
 <?php
 
-require_once 'Tests/Auth/OpenID/TestUtil.php';
+require_once 'Tests/Auth/OpenID/TestCase.php';
+require_once "Tests/Auth/OpenID/TestSuite.php";
 
 require_once 'Auth/OpenID/Association.php';
 require_once 'Auth/OpenID/Consumer.php';
 
-class AuthRequest_DummyEndpoint {
-    var $preferred_namespace = null;
-    var $local_id = null;
-    var $server_url = null;
-    var $is_op_identifier = false;
 
-    function preferredNamespace()
-    {
-        return $this->preferred_namespace;
-    }
+class Auth_OpenID_AuthRequestSuite extends Auth_OpenID_TestSuite {
+    public static function suite() {
+        $suite = new Auth_OpenID_AuthRequestSuite();
 
-    function getLocalID()
-    {
-        return $this->local_id;
-    }
+        $suite->addTestSuite('Auth_OpenID_OpenID2AuthRequestTest');
+        $suite->addTestSuite('Auth_OpenID_OpenID1AuthRequestTest');
+        $suite->addTestSuite('Auth_OpenID_OpenID2ImmediateAuthRequestTest');
+        $suite->addTestSuite('Auth_OpenID_OpenID1ImmediateAuthRequestTest');
 
-    function isOPIdentifier()
-    {
-        return $this->is_op_identifier;
+        return $suite;
     }
 }
 
-class AuthRequest_DummyAssoc {
-    var $handle = "assoc-handle";
-}
 
-/**
- * Base for AuthRequest tests for OpenID 1 and 2.
- */
-class TestAuthRequestMixin extends OpenIDTestMixin {
+abstract class Auth_OpenID_AuthRequestTestCase extends Auth_OpenID_TestCase {
 
     var $preferred_namespace = null;
     var $immediate = false;
     var $expected_mode = 'checkid_setup';
 
-    function setUp()
-    {
+    function setUp() {
         $this->endpoint = new AuthRequest_DummyEndpoint();
         $this->endpoint->local_id = 'http://server.unittest/joe';
         $this->endpoint->claimed_id = 'http://joe.vanity.example/';
@@ -49,33 +35,30 @@ class TestAuthRequestMixin extends OpenIDTestMixin {
         $this->endpoint->preferred_namespace = $this->preferred_namespace;
         $this->realm = 'http://example/';
         $this->return_to = 'http://example/return/';
-        $this->assoc = new AuthRequest_DummyAssoc();
+        $this->assoc = (object) array('handle' => 'assoc-handle');
         $this->authreq = new Auth_OpenID_AuthRequest($this->endpoint, $this->assoc);
     }
 
-    function failUnlessAnonymous($msg)
-    {
+    function assertAnonymous($message) {
         foreach (array('claimed_id', 'identity') as $key) {
-            $this->failIfOpenIDKeyExists($msg, $key);
+            $this->assertOpenIDNotHasKey($message, $key);
         }
     }
 
-    function failUnlessHasRequiredFields($msg)
+    function assertHasRequiredFields($message)
     {
-        $this->assertEquals($this->preferred_namespace,
-                               $this->authreq->message->getOpenIDNamespace());
+        $this->assertEquals($this->preferred_namespace, $this->authreq->message->getOpenIDNamespace());
+        $this->assertEquals($this->preferred_namespace, $message->getOpenIDNamespace());
+        $this->assertOpenIDValueEquals($message, 'mode', $this->expected_mode);
 
-        $this->assertEquals($this->preferred_namespace,
-                               $msg->getOpenIDNamespace());
-
-        $this->failUnlessOpenIDValueEquals($msg, 'mode',
-                                           $this->expected_mode);
-
-        // Implement these in subclasses because they depend on
-        // protocol differences!
-        $this->failUnlessHasRealm($msg);
-        $this->failUnlessIdentifiersPresent($msg);
+        // Implement these in subclasses because they depend on protocol differences!
+        $this->assertHasRealm($message);
+        $this->assertIdentifiersPresent($message);
     }
+
+    abstract function assertHasRealm($message);
+
+    abstract function assertIdentifiersPresent($message);
 
     // TESTS
 
@@ -85,7 +68,7 @@ class TestAuthRequestMixin extends OpenIDTestMixin {
         $msg = $this->authreq->getMessage($this->realm, $this->return_to,
                                           $this->immediate);
 
-        $this->failIfOpenIDKeyExists($msg, 'assoc_handle');
+        $this->assertOpenIDNotHasKey($msg, 'assoc_handle');
     }
 
     function test_checkWithAssocHandle()
@@ -93,7 +76,7 @@ class TestAuthRequestMixin extends OpenIDTestMixin {
         $msg = $this->authreq->getMessage($this->realm, $this->return_to,
                                          $this->immediate);
 
-        $this->failUnlessOpenIDValueEquals($msg, 'assoc_handle',
+        $this->assertOpenIDValueEquals($msg, 'assoc_handle',
                                            $this->assoc->handle);
     }
 
@@ -121,24 +104,44 @@ class TestAuthRequestMixin extends OpenIDTestMixin {
         $msg = $this->authreq->getMessage($this->realm, $this->return_to,
                                          $this->immediate);
 
-        $this->failUnlessHasIdentifiers(
+        $this->assertHasIdentifiers(
              $msg, $this->endpoint->local_id,
              $this->endpoint->claimed_id);
     }
 }
 
-class TestAuthRequestOpenID2 extends TestAuthRequestMixin {
-    var $preferred_namespace = Auth_OpenID_OPENID2_NS;
 
-    function failUnlessHasRealm($msg)
-    {
-        // check presence of proper realm key and absence of the wrong
-        // one.
-        $this->failUnlessOpenIDValueEquals($msg, 'realm', $this->realm);
-        $this->failIfOpenIDKeyExists($msg, 'trust_root');
+class AuthRequest_DummyEndpoint {
+    var $preferred_namespace = null;
+    var $local_id = null;
+    var $server_url = null;
+    var $is_op_identifier = false;
+
+    function preferredNamespace() {
+        return $this->preferred_namespace;
     }
 
-    function failUnlessIdentifiersPresent($msg)
+    function getLocalID() {
+        return $this->local_id;
+    }
+
+    function isOPIdentifier() {
+        return $this->is_op_identifier;
+    }
+}
+
+
+class Auth_OpenID_OpenID2AuthRequestTest extends Auth_OpenID_AuthRequestTestCase {
+    var $preferred_namespace = Auth_OpenID_OPENID2_NS;
+
+    function assertHasRealm($msg)
+    {
+        // check presence of proper realm key and absence of the wrong one.
+        $this->assertOpenIDValueEquals($msg, 'realm', $this->realm);
+        $this->assertOpenIDNotHasKey($msg, 'trust_root');
+    }
+
+    function assertIdentifiersPresent($msg)
     {
         $identity_present = $msg->hasKey(Auth_OpenID_OPENID_NS, 'identity');
         $claimed_present = $msg->hasKey(Auth_OpenID_OPENID_NS, 'claimed_id');
@@ -146,10 +149,10 @@ class TestAuthRequestOpenID2 extends TestAuthRequestMixin {
         $this->assertEquals($claimed_present, $identity_present);
     }
 
-    function failUnlessHasIdentifiers($msg, $op_specific_id, $claimed_id)
+    function assertHasIdentifiers($msg, $op_specific_id, $claimed_id)
     {
-        $this->failUnlessOpenIDValueEquals($msg, 'identity', $op_specific_id);
-        $this->failUnlessOpenIDValueEquals($msg, 'claimed_id', $claimed_id);
+        $this->assertOpenIDValueEquals($msg, 'identity', $op_specific_id);
+        $this->assertOpenIDValueEquals($msg, 'claimed_id', $claimed_id);
     }
 
     // TESTS
@@ -182,8 +185,8 @@ class TestAuthRequestOpenID2 extends TestAuthRequestMixin {
         $this->authreq->setAnonymous(true);
         $msg = $this->authreq->getMessage($this->realm, $this->return_to,
                                           $this->immediate);
-        $this->failUnlessHasRequiredFields($msg);
-        $this->failUnlessAnonymous($msg);
+        $this->assertHasRequiredFields($msg);
+        $this->assertAnonymous($msg);
     }
 
     function test_opAnonymousIgnoresIdentifier()
@@ -192,8 +195,8 @@ class TestAuthRequestOpenID2 extends TestAuthRequestMixin {
         $this->authreq->setAnonymous(true);
         $msg = $this->authreq->getMessage($this->realm, $this->return_to,
                                           $this->immediate);
-        $this->failUnlessHasRequiredFields($msg);
-        $this->failUnlessAnonymous($msg);
+        $this->assertHasRequiredFields($msg);
+        $this->assertAnonymous($msg);
     }
 
     function test_opIdentifierSendsIdentifierSelect()
@@ -201,14 +204,14 @@ class TestAuthRequestOpenID2 extends TestAuthRequestMixin {
         $this->endpoint->is_op_identifier = true;
         $msg = $this->authreq->getMessage($this->realm, $this->return_to,
                                           $this->immediate);
-        $this->failUnlessHasRequiredFields($msg);
-        $this->failUnlessHasIdentifiers($msg,
+        $this->assertHasRequiredFields($msg);
+        $this->assertHasIdentifiers($msg,
                                         Auth_OpenID_IDENTIFIER_SELECT,
                                         Auth_OpenID_IDENTIFIER_SELECT);
     }
 }
 
-class TestAuthRequestOpenID1 extends TestAuthRequestMixin {
+class Auth_OpenID_OpenID1AuthRequestTest extends Auth_OpenID_AuthRequestTestCase {
     var $preferred_namespace = Auth_OpenID_OPENID1_NS;
 
     function setUpEndpoint()
@@ -217,25 +220,24 @@ class TestAuthRequestOpenID1 extends TestAuthRequestMixin {
         $this->endpoint->preferred_namespace = Auth_OpenID_OPENID1_NS;
     }
 
-    function failUnlessHasIdentifiers($msg, $op_specific_id, $claimed_id)
+    function assertHasIdentifiers($msg, $op_specific_id, $claimed_id)
     {
         // Make sure claimed_is is *absent* in request.
-        $this->failUnlessOpenIDValueEquals($msg, 'identity', $op_specific_id);
-        $this->failIfOpenIDKeyExists($msg, 'claimed_id');
+        $this->assertOpenIDValueEquals($msg, 'identity', $op_specific_id);
+        $this->assertOpenIDNotHasKey($msg, 'claimed_id');
     }
 
-    function failUnlessIdentifiersPresent($msg)
+    function assertIdentifiersPresent($msg)
     {
-        $this->failIfOpenIDKeyExists($msg, 'claimed_id');
+        $this->assertOpenIDNotHasKey($msg, 'claimed_id');
         $this->assertTrue($msg->hasKey(Auth_OpenID_OPENID_NS, 'identity'));
     }
 
-    function failUnlessHasRealm($msg)
+    function assertHasRealm($msg)
     {
-        // check presence of proper realm key and absence of the wrong
-        // one.
-        $this->failUnlessOpenIDValueEquals($msg, 'trust_root', $this->realm);
-        $this->failIfOpenIDKeyExists($msg, 'realm');
+        // check presence of proper realm key and absence of the wrong one.
+        $this->assertOpenIDValueEquals($msg, 'trust_root', $this->realm);
+        $this->assertOpenIDNotHasKey($msg, 'realm');
     }
 
     // TESTS
@@ -264,36 +266,20 @@ class TestAuthRequestOpenID1 extends TestAuthRequestMixin {
         $this->endpoint->is_op_identifier = true;
         $msg = $this->authreq->getMessage($this->realm, $this->return_to,
                                           $this->immediate);
-        $this->failUnlessHasRequiredFields($msg);
+        $this->assertHasRequiredFields($msg);
         $this->assertEquals(Auth_OpenID_IDENTIFIER_SELECT,
                             $msg->getArg(Auth_OpenID_OPENID1_NS,
                                          'identity'));
     }
 }
 
-class TestAuthRequestOpenID1Immediate extends TestAuthRequestOpenID1 {
+class Auth_OpenID_OpenID1ImmediateAuthRequestTest extends Auth_OpenID_OpenID1AuthRequestTest {
     var $immediate = true;
     var $expected_mode = 'checkid_immediate';
 }
 
-class TestAuthRequestOpenID2Immediate extends TestAuthRequestOpenID2 {
+class Auth_OpenID_OpenID2ImmediateAuthRequestTest extends Auth_OpenID_OpenID2AuthRequestTest {
     var $immediate = true;
     var $expected_mode = 'checkid_immediate';
-}
-
-class Tests_Auth_OpenID_AuthRequest extends PHPUnit_Framework_TestSuite {
-
-    function getName()
-    {
-        return "Tests_Auth_OpenID_AuthRequest";
-    }
-
-    function Tests_Auth_OpenID_AuthRequest()
-    {
-        $this->addTestSuite('TestAuthRequestOpenID1');
-        $this->addTestSuite('TestAuthRequestOpenID1Immediate');
-        $this->addTestSuite('TestAuthRequestOpenID2');
-        $this->addTestSuite('TestAuthRequestOpenID2Immediate');
-    }
 }
 
