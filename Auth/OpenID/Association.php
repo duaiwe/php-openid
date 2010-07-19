@@ -377,7 +377,7 @@ class Auth_OpenID_Association {
         }
 
         $calculated_sig = $this->getMessageSignature($message);
-        return $calculated_sig == $sig;
+        return Auth_OpenID_CryptUtil::constEq($calculated_sig, $sig);
     }
 }
 
