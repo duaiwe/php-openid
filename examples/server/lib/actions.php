@@ -18,7 +18,7 @@ function action_default()
 {
     header('X-XRDS-Location: '.buildURL('idpXrds'));
 
-    $server =& getServer();
+    $server = getServer();
     $method = $_SERVER['REQUEST_METHOD'];
     $request = null;
     if ($method == 'GET') {

@@ -669,7 +669,7 @@ class Auth_OpenID_GenericConsumer {
                                         '_completeInvalid');
 
         return call_user_func_array(array($this, $method),
-                                    array($message, &$endpoint, $return_to));
+                                    array($message, $endpoint, $return_to));
     }
 
     /**
